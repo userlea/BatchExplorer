@@ -7,7 +7,6 @@ export interface AuthorizeUrlParams {
     scope: string;
     nonce?: string;
     state?: string;
-    resource?: string;
     prompt?: string;
 }
 
@@ -24,11 +23,11 @@ export interface LogoutParams {
 
 export function authorizeUrl(aadUrl: string, tenant: string, params: AuthorizeUrlParams) {
     const query = objectToParams(params);
-    return `${aadUrl}${tenant}/oauth2/authorize?${query}`;
+    return `${aadUrl}${tenant}/oauth2/v2.0/authorize?${query}`;
 }
 
 export function logoutUrl(aadUrl: string, tenant: string) {
-    return `${aadUrl}${tenant}/oauth2/logout`;
+    return `${aadUrl}${tenant}/oauth2/v2.0/logout`;
 }
 
 export function objectToParams(object): string {

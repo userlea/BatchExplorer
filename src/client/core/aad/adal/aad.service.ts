@@ -20,7 +20,7 @@ import { UserDecoder } from "./user-decoder";
 
 const adalConfig: AADConfig = {
     tenant: "common",
-    clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46", // Azure CLI
+    clientId: "f7fe7175-0211-4aee-908b-215d82c13d6c", // Azure CLI
     redirectUri: "urn:ietf:wg:oauth:2.0:oob",
     logoutRedirectUri: "urn:ietf:wg:oauth:2.0:oob/logout",
 };

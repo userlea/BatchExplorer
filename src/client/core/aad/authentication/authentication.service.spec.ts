@@ -45,7 +45,7 @@ describe("AuthenticationService", () => {
             const args = fakeAuthWindow.loadURL.calls.mostRecent().args;
             expect(args.length).toBe(1);
             const url = args[0];
-            expect(url).toContain("https://login.microsoftonline.com/tenant-1/oauth2/authorize");
+            expect(url).toContain("https://login.microsoftonline.com/tenant-1/oauth2/v2.0/authorize");
             expect(url).toContain("&resource=https://management.azure.com/");
             expect(url).toContain("?response_type=id_token+code");
             expect(url).toContain("&scope=user_impersonation+openid");

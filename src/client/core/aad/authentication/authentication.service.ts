@@ -132,14 +132,14 @@ export class AuthenticationService {
      * @param silent @see #authorize
      */
     private _buildUrl(tenantId, silent: boolean): string {
-        const params: AdalConstants.AuthorizeUrlParams = {
-            response_type: "id_token+code",
+        const params: any = {
+            response_type: "code",
             redirect_uri: encodeURIComponent(this.config.redirectUri),
             client_id: this.config.clientId,
-            scope: "user_impersonation+openid",
             nonce: SecureUtils.uuid(),
             state: SecureUtils.uuid(),
-            resource: this.app.properties.azureEnvironment.armUrl,
+            scope: "openid+" + this.app.properties.azureEnvironment.armUrl + "user_impersonation",
+            requested_token_use: "on_behalf_of",
         };
 
         if (silent) {
@@ -158,7 +158,7 @@ export class AuthenticationService {
     }
 
     private _handleNavigate(url: string) {
-        if (this._logoutDeferred && url.endsWith("oauth2/logout")) {
+        if (this._logoutDeferred && url.endsWith("oauth2/v2.0/logout")) {
             this._closeWindow();
             this._waitingForAuth = false;
             const deferred = this._logoutDeferred;
@@ -203,7 +203,8 @@ export class AuthenticationService {
      * Extract params return in the redirect_uri
      */
     private _getRedirectUrlParams(url: string): AuthorizeResult | AuthorizeError {
-        const segments = url.split("#");
+        console.log("URL", url);
+        const segments = url.split("?");
         const params = {};
         for (const str of segments[1].split("&")) {
             const [key, value] = str.split("=");

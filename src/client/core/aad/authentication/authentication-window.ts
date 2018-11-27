@@ -7,7 +7,8 @@ export class AuthenticationWindow extends UniqueWindow {
         const window = new BrowserWindow({
             width: 800,
             height: 700,
-            show: false,
+            // show: false,
+            show: true, // TODO-TIM chagne back
             center: true,
             webPreferences: {
                 nodeIntegration: false,

@@ -63,7 +63,7 @@ export class AccessTokenService {
     }
 
     private _buildUrl(tenantId: string) {
-        return `${this.properties.azureEnvironment.aadUrl}/${tenantId}/oauth2/token`;
+        return `${this.properties.azureEnvironment.aadUrl}/${tenantId}/oauth2/v2.0/token`;
     }
 
     private _redeemBody(resource: string, authorizationCode: string) {
@@ -71,7 +71,7 @@ export class AccessTokenService {
             grant_type: "authorization_code",
             client_id: this.config.clientId,
             code: authorizationCode,
-            resource: resource,
+            scope: resource + "user_impersonation",
             redirect_uri: this.config.redirectUri,
         };
         return objectToParams(params);
