@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { EntityView, autobind } from "@batch-flask/core";
+import { EntityView, PageRefreshService, autobind } from "@batch-flask/core";
 import { JobDecorator } from "app/decorators";
 import { Job } from "app/models";
 import { JobParams, JobService } from "app/services";
 import { List } from "immutable";
-import { Subscription } from "rxjs";
+import { Subscription, forkJoin } from "rxjs";
+import { flatMap } from "rxjs/operators";
 import { JobCommands } from "../action";
 
-import { flatMap } from "rxjs/operators";
 import "./job-details.scss";
 
 @Component({
@@ -40,6 +40,7 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private changeDetector: ChangeDetectorRef,
         private jobService: JobService,
+        private pageRefreshService: PageRefreshService,
         private router: Router) {
 
         this.data = this.jobService.view();
@@ -78,7 +79,10 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
 
     @autobind()
     public refresh() {
-        return this.data.refresh();
+        return forkJoin(
+            this.data.refresh(),
+            this.pageRefreshService.refresh(),
+        );
     }
 
     @autobind()
