@@ -80,9 +80,11 @@ export class StorageContainerService {
                 );
 
                 console.log("List", response);
-                response.containerItems.map((x: any) => x.storageAccountId = params.storageAccountId);
+                if (response.containerItems) {
+                    response.containerItems.map((x: any) => x.storageAccountId = params.storageAccountId);
+                }
                 return {
-                    data: response.containerItems,
+                    data: response.containerItems || [],
                     nextMarker: response.nextMarker,
                 };
             },
