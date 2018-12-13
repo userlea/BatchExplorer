@@ -1,10 +1,18 @@
 import { Injectable } from "@angular/core";
+import {
+    Pipeline,
+    ServiceURL,
+    StorageURL,
+    TokenCredential,
+} from "@azure/storage-blob";
 import { ServerError } from "@batch-flask/core";
-import { StorageKeys } from "app/models";
+import { SanitizedError } from "@batch-flask/utils";
+import { ArmBatchAccount, StorageKeys } from "app/models";
 import { BatchExplorerService } from "app/services/batch-explorer.service";
 import { ArmResourceUtils } from "app/utils";
 import { Observable, throwError } from "rxjs";
-import { first, flatMap, map, share } from "rxjs/operators";
+import { first, flatMap, map, share, switchMap, take } from "rxjs/operators";
+import { AdalService } from "../adal";
 import { BatchAccountService } from "../batch-account";
 import { BlobStorageClientProxy } from "./blob-storage-client-proxy";
 import { StorageAccountKeysService } from "./storage-account-keys.service";
@@ -22,17 +30,25 @@ export interface StorageKeyCachedItem {
     keys: StorageKeys;
 }
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class StorageClientService {
+    public get serviceUrl() {
+        return this.batchExplorer.azureEnvironment.storageUrl;
+    }
+
     public hasAutoStorage: Observable<boolean>;
     public hasArmAutoStorage: Observable<boolean>;
 
     private _storageClientFactory: StorageClientProxyFactory;
     private _sharedKeyMap = new Map<string, any>();
+    private _tokenCredential: TokenCredential;
+    private _pipeline: Pipeline;
+    private _serviceURL: ServiceURL;
 
     constructor(
         private batchExplorer: BatchExplorerService,
         private accountService: BatchAccountService,
+        private adal: AdalService,
         private storageKeysService: StorageAccountKeysService) {
 
         this._storageClientFactory = new StorageClientProxyFactory();
@@ -44,6 +60,31 @@ export class StorageClientService {
         this.hasArmAutoStorage = this.accountService.currentAccount.pipe(map((account) => {
             return account.hasArmAutoStorage();
         }));
+    }
+
+    public get(storageAccountId: string): Observable<ServiceURL> {
+        return this.accountService.currentAccount.pipe(
+            take(1),
+            switchMap((account) => {
+                if (account instanceof ArmBatchAccount) {
+                    return this.adal.accessTokenData(account.subscription.tenantId, this.serviceUrl).pipe(
+                        map((accessToken) => {
+                            if (this._serviceURL) {
+                                this._tokenCredential.token = accessToken.access_token;
+                            } else {
+                                this._tokenCredential = new TokenCredential(accessToken.access_token);
+                                this._pipeline = StorageURL.newPipeline(this._tokenCredential);
+                                this._serviceURL = new ServiceURL(
+                                    this._getAccountUrl(storageAccountId), this._pipeline);
+                            }
+                            return this._serviceURL;
+                        }),
+                    );
+                } else {
+                    return throwError(new SanitizedError("Can't use storage API with local batch account"));
+                }
+            }),
+        );
     }
 
     public getAutoStorage(): Observable<any> {
@@ -76,5 +117,11 @@ export class StorageClientService {
 
     public clearCurrentStorageKeys() {
         this._sharedKeyMap.clear();
+    }
+
+    private _getAccountUrl(storageAccountId) {
+        const name = ArmResourceUtils.getAccountNameFromResourceId(storageAccountId);
+        const endpoint = this.batchExplorer.azureEnvironment.storageEndpoint;
+        return `https://${name}.blob.${endpoint}`;
     }
 }

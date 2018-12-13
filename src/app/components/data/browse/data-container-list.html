@@ -10,7 +10,7 @@
             <bl-quick-list-item-status [status]="containerStatus(container)"></bl-quick-list-item-status>
         </ng-container>
         <ng-container *blQuickListRowTitle="let container">{{container.id}}</ng-container>
-        <ng-container *blQuickListRowState="let container">{{container.lease?.state}}</ng-container>
+        <ng-container *blQuickListRowState="let container">{{container.properties.leaseState}}</ng-container>
     </bl-quick-list>
 
     <bl-table *ngIf="!quicklist"
@@ -28,17 +28,17 @@
 
         <bl-column name="leaseState">
             <div *blHeadCellDef>Lease state</div>
-            <div *blCellDef="let container">{{container.lease?.state}}</div>
+            <div *blCellDef="let container">{{container.properties.leaseStatus}}</div>
         </bl-column>
 
         <bl-column name="leaseStatus">
             <div *blHeadCellDef>Lease status</div>
-            <div *blCellDef="let container">{{container.lease?.status}}</div>
+            <div *blCellDef="let container">{{container.properties.leaseState}}</div>
         </bl-column>
 
         <bl-column name="lastModified">
             <div *blHeadCellDef>Last modified</div>
-            <div *blCellDef="let container">{{container.lastModified}}</div>
+            <div *blCellDef="let container">{{container.properties.lastModified}}</div>
         </bl-column>
     </bl-table>
 </ng-container>

@@ -1,4 +1,5 @@
 import { Type } from "@angular/core";
+import { ServiceURL } from "@azure/storage-blob";
 import { ContinuationToken, ListGetter, ListGetterConfig, Record, ServerError } from "@batch-flask/core";
 import { StorageClientService } from "app/services/storage/storage-client.service";
 import { Observable, from, throwError } from "rxjs";
@@ -10,13 +11,13 @@ export interface StorageBaseParams {
 
 export interface StorageListResponse {
     data: any[];
-    continuationToken?: string;
+    nextMarker?: string;
 }
 
 export interface StorageListConfig<TEntity extends Record<any>, TParams extends StorageBaseParams>
     extends ListGetterConfig<TEntity, TParams> {
 
-    getData: (client: any, params: TParams, options: any, token: any) => Promise<StorageListResponse>;
+    getData: (client: ServiceURL, params: TParams, options: any, token: any) => Promise<StorageListResponse>;
 }
 
 export class StorageListGetter<TEntity extends Record<any>, TParams extends StorageBaseParams>
@@ -63,12 +64,12 @@ export class StorageListGetter<TEntity extends Record<any>, TParams extends Stor
     private _processStorageResponse(response) {
         return {
             data: response.data,
-            nextLink: response.continuationToken,
+            nextLink: response.nextMarker,
         };
     }
 
     private _clientProxy(params, options, nextLink) {
-        return this.storageClient.getFor(params.storageAccountId).pipe(
+        return this.storageClient.get(params.storageAccountId).pipe(
             map((client) => {
                 return this._getData(client, params, options, nextLink);
             }),

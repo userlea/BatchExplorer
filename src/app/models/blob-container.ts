@@ -1,14 +1,35 @@
 import { Model, NavigableRecord, Prop, Record } from "@batch-flask/core";
 import { Constants } from "common";
-import { ContainerLease, ContainerLeaseAttributes } from "./container-lease";
+import { LeaseState, LeaseStatus } from "./container-lease";
 
 export interface BlobContainerAttributes {
     id: string;
     name: string;
     publicAccessLevel: string;
-    metadata?: any;
+}
+
+export interface BlobContainerPropertiesAttributes {
+    eTag: string;
+    hasImmutabilityPolicy: false;
+    hasLegalHold: false;
     lastModified: Date;
-    lease?: Partial<ContainerLeaseAttributes>;
+    leaseState: LeaseState;
+    leaseStatus: LeaseStatus;
+    metadata?: any;
+}
+
+/**
+ * Class for displaying blob container information.
+ */
+@Model()
+export class BlobContainerProperties extends Record<BlobContainerAttributes>  {
+    @Prop() public eTag: string;
+    @Prop() public metadata: string;
+    @Prop() public hasImmutabilityPolicy: false;
+    @Prop() public hasLegalHold: false;
+    @Prop() public lastModified: Date;
+    @Prop() public leaseState: LeaseState;
+    @Prop() public leaseStatus: LeaseStatus;
 }
 
 /**
@@ -22,11 +43,13 @@ export class BlobContainer extends Record<BlobContainerAttributes> implements Na
     // container name with the prefix removed
     @Prop() public name: string;
 
-    @Prop() public publicAccessLevel: string;
-    @Prop() public metadata: any;
-    @Prop() public lastModified: Date;
-    @Prop() public lease: ContainerLease;
+    @Prop() public properties: BlobContainerProperties;
+
     @Prop() public storageAccountId: string;
+
+    constructor(data: BlobContainerAttributes) {
+        super({ id: data.name, ...data });
+    }
 
     public get routerLink(): string[] {
         if (this.isFileGroup) {

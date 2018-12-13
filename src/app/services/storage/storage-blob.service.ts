@@ -1,4 +1,5 @@
 import { Injectable, NgZone } from "@angular/core";
+import { Aborter, ContainerURL } from "@azure/storage-blob";
 import {
     DataCache,
     EntityView,
@@ -102,12 +103,19 @@ export class StorageBlobService {
 
         this._blobListGetter = new StorageListGetter(File, this.storageClient, {
             cache: (params) => this.getBlobFileCache(params),
-            getData: (client, params, options, continuationToken) => {
-                return client.listBlobs(
-                    params.container,
-                    options.original,
+            getData: async (client, params, options, continuationToken) => {
+                const containerURL = ContainerURL.fromServiceURL(client, params.container);
+
+                const response = await containerURL.listBlobFlatSegment(
+                    Aborter.none,
                     continuationToken,
+                    options.original,
                 );
+
+                return {
+                    data: response.segment.blobItems,
+                    nextMarker: response.nextMarker,
+                };
             },
             logIgnoreError: storageIgnoredErrors,
         });

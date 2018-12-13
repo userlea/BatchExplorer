@@ -1,4 +1,5 @@
 import { Injectable, NgZone } from "@angular/core";
+import { Aborter, ContainerURL } from "@azure/storage-blob";
 import {
     EntityView,
     HttpCode,
@@ -31,7 +32,7 @@ const storageIgnoredErrors = [
     HttpCode.Conflict,
 ];
 
-@Injectable({providedIn: "root"})
+@Injectable({ providedIn: "root" })
 export class StorageContainerService {
     /**
      * Triggered only when a file group is added through this app.
@@ -53,9 +54,13 @@ export class StorageContainerService {
         this._containerGetter = new StorageEntityGetter(BlobContainer, this.storageClient, {
             cache: params => this._containerCache.getCache(params),
             getFn: async (client, params: GetContainerParams) => {
-                const response = await client.getContainerProperties(params.id);
-                response.data.storageAccountId = params.storageAccountId;
-                return response;
+                const properties = await ContainerURL.fromServiceURL(client, params.id).getProperties(Aborter.none);
+                console.log("Properties2", properties);
+                return {
+                    name: params.id,
+                    properties,
+                    storageAccountId: params.storageAccountId,
+                };
             },
         });
         this._containerListGetter = new StorageListGetter(BlobContainer, this.storageClient, {
@@ -65,13 +70,21 @@ export class StorageContainerService {
                 if (options && options.filter) {
                     prefix = options.filter.value;
                 }
-                const response = await client.listContainersWithPrefix(
-                    prefix,
+                const response = await client.listContainersSegment(
+                    Aborter.none,
                     continuationToken,
-                    { maxResults: options && options.maxResults });
+                    {
+                        prefix,
+                        maxresults: options && options.maxResults,
+                    },
+                );
 
-                response.data.map(x => x.storageAccountId = params.storageAccountId);
-                return response;
+                console.log("List", response);
+                response.containerItems.map((x: any) => x.storageAccountId = params.storageAccountId);
+                return {
+                    data: response.containerItems,
+                    nextMarker: response.nextMarker,
+                };
             },
             logIgnoreError: storageIgnoredErrors,
         });
