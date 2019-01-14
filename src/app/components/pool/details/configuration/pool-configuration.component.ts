@@ -9,6 +9,7 @@ import { PoolPatchDto } from "app/models/dtos";
 import { PoolService } from "app/services";
 import { List } from "immutable";
 import { flatMap } from "rxjs/operators";
+import { EditAppPackageFormComponent, EditCertificateReferencesComponent } from "../../action/edit";
 
 // tslint:disable:trackBy-function
 @Component({
@@ -41,7 +42,7 @@ export class PoolConfigurationComponent {
         const ref = this.sidebarManager.open(`edit-pool-metadata-${id}`, EditMetadataFormComponent);
         ref.component.metadata = this.pool.metadata;
         ref.component.save = (metadata) => {
-            const data = new PoolPatchDto({ metadata });
+            const data = new PoolPatchDto({ metadata } as any);
             return this.poolService.patch(id, data).pipe(
                 flatMap(() => this.poolService.get(id)),
             );
@@ -51,6 +52,18 @@ export class PoolConfigurationComponent {
     @autobind()
     public editStartTask() {
         const ref = this.sidebarManager.open(`edit-start-task-${this._pool.id}`, StartTaskEditFormComponent);
+        ref.component.pool = this.pool;
+    }
+
+    @autobind()
+    public editApplicationPackages() {
+        const ref = this.sidebarManager.open(`edit-app-packages-${this._pool.id}`, EditAppPackageFormComponent);
+        ref.component.pool = this.pool;
+    }
+
+    @autobind()
+    public editCertificates() {
+        const ref = this.sidebarManager.open(`edit-certificates-${this._pool.id}`, EditCertificateReferencesComponent);
         ref.component.pool = this.pool;
     }
 

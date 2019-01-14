@@ -1,15 +1,16 @@
 import { Injectable, OnDestroy } from "@angular/core";
+import { log } from "@batch-flask/utils";
 import { ProgressInfo } from "builder-util-runtime";
+// Electron-updater has not sideEffects: false so it fail to tree shake
+//  Make sure this file is not imported in Browser environment with export *
 import { UpdateCheckResult, autoUpdater } from "electron-updater";
 import { BehaviorSubject, Observable, Subscription, interval } from "rxjs";
 import { map } from "rxjs/operators";
 import { AutoUpdateService, UpdateStatus } from "./base";
 
-export const AUTO_UPDATE_MAIN_SERVICE_TOKEN = "AUTO_UPDATE_SERVICE";
-
 export const AUTO_UPDATE_CHECK_INTERVAL = 3600_000; // Every hour
 
-@Injectable({providedIn: "root"})
+@Injectable()
 export class AutoUpdateMainService extends AutoUpdateService implements OnDestroy {
 
     public set autoInstallOnAppQuit(value: boolean) {
@@ -40,8 +41,12 @@ export class AutoUpdateMainService extends AutoUpdateService implements OnDestro
         this.updateInfo = null;
         this.downloadProgress = this._downloadProgress.asObservable();
 
-        this._autoCheckSub = interval(3600_000).subscribe(() => {
-            this.checkForUpdates();
+        this._autoCheckSub = interval(AUTO_UPDATE_CHECK_INTERVAL).subscribe(async () => {
+            try {
+                await autoUpdater.checkForUpdates();
+            } catch (e) {
+                log.error("Failed to check for updates", e);
+            }
         });
 
         this.updateReady = this._status.pipe(map(x => x === UpdateStatus.Ready));

@@ -1,7 +1,8 @@
-import { List } from "immutable";
-import { Duration, duration } from "moment";
-
 import { ListProp, Model, NavigableRecord, Prop, Record } from "@batch-flask/core";
+import {
+    ApplicationPackageReference, ApplicationPackageReferenceAttributes,
+} from "app/models/application-package-reference";
+import { CertificateReference } from "app/models/certificate-reference";
 import { CloudServiceConfiguration } from "app/models/cloud-service-configuration";
 import { Metadata, MetadataAttributes } from "app/models/metadata";
 import { NetworkConfiguration } from "app/models/network-configuration";
@@ -14,6 +15,8 @@ import {
     VirtualMachineConfigurationAttributes,
 } from "app/models/virtual-machine-configuration";
 import { ModelUtils, PoolUtils } from "app/utils";
+import { List } from "immutable";
+import { Duration } from "luxon";
 import { AutoScaleRun, AutoScaleRunAttributes } from "./auto-scale-run";
 import { PoolStatistics, PoolStatisticsAttributes } from "./pool-statistics";
 
@@ -25,7 +28,7 @@ export enum OSType {
 export interface PoolAttributes {
     allocationState: string;
     allocationStateTransitionTime: Date;
-    applicationPackageReferences: any[];
+    applicationPackageReferences: ApplicationPackageReferenceAttributes[];
     certificateReferences: any[];
     cloudServiceConfiguration: Partial<CloudServiceConfiguration>;
     creationTime: Date;
@@ -67,9 +70,10 @@ export class Pool extends Record<PoolAttributes> implements NavigableRecord {
 
     @Prop() public allocationStateTransitionTime: Date;
 
-    @ListProp(Object) public applicationPackageReferences: List<any>;
+    @ListProp(ApplicationPackageReference)
+    public applicationPackageReferences: List<ApplicationPackageReference> = List([]);
 
-    @ListProp(Object) public certificateReferences: List<any>;
+    @ListProp(CertificateReference) public certificateReferences: List<CertificateReference> = List([]);
 
     @Prop() public cloudServiceConfiguration: CloudServiceConfiguration;
 
@@ -95,7 +99,7 @@ export class Pool extends Record<PoolAttributes> implements NavigableRecord {
 
     @ListProp(ResizeError) public resizeErrors: List<ResizeError> = List([]);
 
-    @Prop(duration) public resizeTimeout: Duration;
+    @Prop() public resizeTimeout: Duration;
 
     @Prop() public state: string;
 
@@ -107,7 +111,7 @@ export class Pool extends Record<PoolAttributes> implements NavigableRecord {
 
     @Prop() public autoScaleFormula: string;
 
-    @Prop(duration) public autoScaleEvaluationInterval: Duration;
+    @Prop() public autoScaleEvaluationInterval: Duration;
 
     @Prop() public taskSchedulingPolicy: TaskSchedulingPolicy;
 
@@ -169,7 +173,6 @@ export class Pool extends Record<PoolAttributes> implements NavigableRecord {
 
 export enum PoolState {
     active = "active",
-    upgrading = "upgrading",
     deleting = "deleting",
 }
 
