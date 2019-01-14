@@ -97,8 +97,8 @@ export class StorageBlobService {
 
         this._blobGetter = new StorageEntityGetter(File, this.storageClient, {
             cache: (params) => this.getBlobFileCache(params),
-            getFn: (client, params: BlobFileParams) =>
-                client.getBlobProperties(params.container, params.blobName, params.blobPrefix),
+            getFn: (client, params: BlobFileParams) => null,
+                // client.getProperties(Aborter.none, params.container, params.blobName, params.blobPrefix),
         });
 
         this._blobListGetter = new StorageListGetter(File, this.storageClient, {

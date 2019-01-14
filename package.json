@@ -159,7 +159,7 @@
     "@angular/platform-browser-dynamic": "^7.1.2",
     "@angular/platform-server": "^7.1.2",
     "@angular/router": "^7.1.2",
-    "@azure/storage-blob": "^10.2.0-preview",
+    "@azure/storage-blob": "^10.3.0",
     "@types/keytar": "^4.0.1",
     "applicationinsights": "^1.0.7",
     "azure-storage": "^2.10.2",

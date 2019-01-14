@@ -3,7 +3,7 @@ import { ServiceURL } from "@azure/storage-blob";
 import { EntityGetter, EntityGetterConfig, Record, ServerError } from "@batch-flask/core";
 import { StorageClientService } from "app/services/storage/storage-client.service";
 import { Observable, from, throwError } from "rxjs";
-import { catchError, flatMap, map, share } from "rxjs/operators";
+import { catchError, flatMap, share } from "rxjs/operators";
 import { StorageBaseParams } from "./storage-list-getter";
 
 export interface StorageEntityGetterConfig<TEntity extends Record<any>, TParams extends StorageBaseParams>

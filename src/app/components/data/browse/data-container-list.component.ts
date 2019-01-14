@@ -113,7 +113,7 @@ export class DataContainerListComponent extends ListBaseComponent implements OnI
     }
 
     public containerStatus(container: BlobContainer): QuickListItemStatus {
-        switch (container.lease && container.lease.status) {
+        switch (container.properties && container.properties.leaseStatus) {
             case LeaseStatus.locked:
                 return QuickListItemStatus.warning;
             default:
