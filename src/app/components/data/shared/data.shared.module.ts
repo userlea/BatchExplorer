@@ -10,8 +10,10 @@ import { FileGroupsPickerComponent } from "./file-groups-picker";
 import { FileOrDirectoryPickerModule } from "./file-or-directory-picker";
 import { JobIdComponent } from "./job-id/job-id.component";
 import { RenderingContainerImagePickerComponent } from "./rendering-container-image-picker";
+import { SingleAppPackagePickerComponent } from "./single-app-package-picker";
 
 const components = [
+    SingleAppPackagePickerComponent,
     CloudFilePickerComponent,
     CloudFilePickerDialogComponent,
     ContainerImageOnPoolComponent,

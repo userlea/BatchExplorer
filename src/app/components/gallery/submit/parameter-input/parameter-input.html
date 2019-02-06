@@ -47,6 +47,9 @@
             <bl-hint align="end"> {{ parameter.description }} </bl-hint>
         </bl-form-field>
     </div>
+    <div *ngSwitchCase="NcjParameterExtendedType.applicationPackage">
+            <bl-single-app-package-picker [formControl]="parameterValue" class="form-element" ></bl-single-app-package-picker>
+        </div>
     <div *ngSwitchCase="NcjParameterExtendedType.int">
         <bl-form-field class="form-element">
             <input blInput  type="number" [formControl]="parameterValue" [placeholder]="parameter.name">

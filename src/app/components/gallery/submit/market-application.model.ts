@@ -13,6 +13,7 @@ export enum NcjParameterExtendedType {
     jobId = "job-id",
     renderingContainerImage= "rendering-container-image",
     containerImageOnPool= "container-image-on-pool",
+    applicationPackage= "application-package",
 }
 
 export class NcjParameterWrapper {
