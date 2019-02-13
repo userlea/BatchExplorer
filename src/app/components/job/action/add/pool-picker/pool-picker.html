@@ -1,9 +1,9 @@
 <div class="pool-filters" [formGroup]="filters">
     <bl-select [placeholder]="'pool-picker.filterByOS' | i18n" formControlName="offer">
-        <bl-option [value]="null" label="No filter"></bl-option>
         <bl-option [value]="offer.name" [label]="offer.label" *ngFor="let offer of offers;trackBy: trackOffer"></bl-option>
     </bl-select>
     <input blInput class="search-input" [placeholder]="'pool-picker.filterByID' | i18n" formControlName="id" />
+    <mat-checkbox title="Hide pools created automatically with a Job" formControlName="hideAutoPool">Hide auto pools</mat-checkbox>
 </div>
 <bl-loading [status]="poolsData.status | async">
     <div class="pool-list" role="listbox">

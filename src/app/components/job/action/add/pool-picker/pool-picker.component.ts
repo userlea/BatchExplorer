@@ -6,21 +6,21 @@ import {
     NG_VALIDATORS,
     NG_VALUE_ACCESSOR,
 } from "@angular/forms";
-import { List } from "immutable";
-import { Subscription } from "rxjs";
-
 import { ListView } from "@batch-flask/core";
 import { LoadingStatus } from "@batch-flask/ui";
 import { Offer, Pool, PoolOsSkus } from "app/models";
 import { PoolListParams, PoolOsService, PoolService, VmSizeService } from "app/services";
 import { PoolUtils } from "app/utils";
-import { distinctUntilChanged } from "rxjs/operators";
+import { List } from "immutable";
+import { Subject, Subscription, combineLatest } from "rxjs";
+import { distinctUntilChanged, startWith, takeUntil } from "rxjs/operators";
 
 import "./pool-picker.scss";
 
 interface PoolFilters {
     id: string;
     offer: string;
+    hideAutoUpdate: boolean;
 }
 
 const CLOUD_SERVICE_OFFER = "cloudservice-windows";
@@ -40,14 +40,14 @@ export class PoolPickerComponent implements ControlValueAccessor, OnDestroy {
     public pickedPool: string;
     public poolsData: ListView<Pool, PoolListParams>;
     public displayedPools: List<Pool> = List([]);
-    public filters: FormGroup;
+    public filters: FormGroup<PoolFilters>;
     public offers: any[] = [];
 
     private _vmSizeCoresMap = new Map<string, number>();
     private _pools: List<Pool> = List([]);
     private _offers: Offer[] = [];
     private _propagateChange: (value: any) => void = null;
-    private _subs: Subscription[] = [];
+    private _destroy = new Subject();
 
     constructor(
         formBuilder: FormBuilder,
@@ -59,24 +59,29 @@ export class PoolPickerComponent implements ControlValueAccessor, OnDestroy {
         this.filters = formBuilder.group({
             id: "",
             offer: null,
+            hideAutoPool: [true],
         });
-        this._subs.push(this.filters.valueChanges.pipe(distinctUntilChanged()).subscribe((query: PoolFilters) => {
-            this._updateDisplayedPools();
-        }));
 
-        this._subs.push(this.poolOsService.offers.subscribe((offers: PoolOsSkus) => {
+        this.poolOsService.offers.subscribe((offers: PoolOsSkus) => {
             this._offers = offers.allOffers;
             this._updateOffers();
-        }));
+        });
 
-        this._subs.push(this.poolsData.items.subscribe((pools) => {
+        combineLatest(
+            this.poolsData.items,
+            this.filters.valueChanges.pipe(startWith(this.filters.value), distinctUntilChanged()),
+        ).pipe(
+            takeUntil(this._destroy),
+        ).subscribe(([pools, filters]) => {
+            this._updateDisplayedPools(pools, filters);
+        });
+        this.poolsData.items.subscribe((pools) => {
             this._pools = pools;
             this._updateOffers();
-            this._updateDisplayedPools();
-        }));
+        });
 
-        this._subs.push(this.vmSizeService.sizes.subscribe((sizes) => {
-            if (!sizes) {return; }
+        this.vmSizeService.sizes.pipe(takeUntil(this._destroy)).subscribe((sizes) => {
+            if (!sizes) { return; }
             const vmSizeCoresMap = new Map<string, number>();
             sizes.forEach((size) => {
                 vmSizeCoresMap.set(size.id, size.numberOfCores);
@@ -84,11 +89,12 @@ export class PoolPickerComponent implements ControlValueAccessor, OnDestroy {
 
             this._vmSizeCoresMap = vmSizeCoresMap;
             this.changeDetector.markForCheck();
-        }));
+        });
     }
 
     public ngOnDestroy() {
-        this._subs.forEach(x => x.unsubscribe());
+        this._destroy.next();
+        this._destroy.complete();
     }
 
     public writeValue(poolInfo: any) {
@@ -139,19 +145,21 @@ export class PoolPickerComponent implements ControlValueAccessor, OnDestroy {
         });
     }
 
-    private _updateDisplayedPools() {
-        const pools = this._pools.filter((pool) => {
-            return this._filterPool(pool);
-        });
-        this.displayedPools = List(pools);
+    private _updateDisplayedPools(pools: List<Pool>, filters: PoolFilters) {
+        this.displayedPools = List(pools.filter((pool) => {
+            return this._filterPool(pool, filters);
+        }));
         this.changeDetector.markForCheck();
     }
 
-    private _filterPool(pool: Pool): boolean {
-        const filters: PoolFilters = this.filters.value;
+    private _filterPool(pool: Pool, filters: PoolFilters): boolean {
         if (filters.id !== "" && !pool.id.toLowerCase().contains(filters.id.toLowerCase())) {
             return false;
         }
+
+        // if (filters.hideAutoUpdate) {
+        //     return false;
+        // }
 
         if (filters.offer) {
             if (!this._filterByOffer(pool, filters.offer)) {
