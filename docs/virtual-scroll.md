@@ -16,7 +16,7 @@ Virtual scroll is currently being used in the `bl-quick-list` and `bl-table` com
     [items]="items"
     [childHeight]="48">
 
-    <div *ngVirtualRow="let item; trackBy: trackItem">
+    <div *blVirtualRow="let item; trackBy: trackItem">
         <!-- Displpay item here -->
     </div>
 

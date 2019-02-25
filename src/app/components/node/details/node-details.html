@@ -31,6 +31,10 @@
                     <bl-tab-label>Monitoring</bl-tab-label>
                     <bl-pool-graphs [pool]="pool" [node]="node"></bl-pool-graphs>
                 </bl-tab>
+                <bl-tab key="diagnostics">
+                    <bl-tab-label>Diagnostics</bl-tab-label>
+                    <bl-node-diagnostics [poolId]="pool.id" [nodeId]="node.id"></bl-node-diagnostics>
+                </bl-tab>
             </bl-tab-group>
         </bl-card>
     </div>

@@ -6,7 +6,7 @@ import { NodeBrowseModule } from "app/components/node/browse";
 import { NodeConnectModule } from "app/components/node/connect";
 import {
     NodeConfigurationComponent, NodeDefaultComponent, NodeDetailsComponent,
-    NodeErrorDisplayComponent, StartTaskErrorDisplayComponent,
+    NodeDiagnosticsComponent, NodeErrorDisplayComponent, StartTaskErrorDisplayComponent,
 } from "app/components/node/details";
 import { NodeHomeComponent } from "app/components/node/home";
 import { PoolGraphsModule } from "app/components/pool/graphs";
@@ -17,7 +17,7 @@ import { ComputeNodeRoutingModule } from "./node-routing.module";
 
 const components = [
     NodeConfigurationComponent, NodeDefaultComponent, NodeDetailsComponent, NodeHomeComponent,
-    StartTaskErrorDisplayComponent, NodeErrorDisplayComponent,
+    StartTaskErrorDisplayComponent, NodeErrorDisplayComponent, NodeDiagnosticsComponent,
 ];
 
 const modules = [
