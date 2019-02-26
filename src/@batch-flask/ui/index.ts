@@ -1,6 +1,5 @@
 export * from "./abstract-list";
 export * from "./activity";
-export * from "./batch-flask-settings";
 export * from "./batchui.module";
 export * from "./buttons";
 export * from "./callout";
@@ -10,7 +9,6 @@ export * from "./date";
 export * from "./dialogs";
 export * from "./dropdown";
 export * from "./duration-picker";
-export * from "./electron";
 export * from "./entity-commands-list";
 export * from "./entity-commands";
 export * from "./file";

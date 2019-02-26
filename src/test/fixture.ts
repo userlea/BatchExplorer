@@ -2,15 +2,15 @@ import { Type } from "@angular/core";
 import { PinnedEntityType } from "@batch-flask/core";
 import { File, Workspace } from "@batch-flask/ui";
 import {
-    ApplicationPackage,
     ArmBatchAccount,
+    ArmSubscription,
     BatchApplication,
+    BatchApplicationPackage,
     BlobContainer,
     Job,
     Node,
     PackageState,
     Pool,
-    Subscription,
     SubtaskInformation,
     Task,
 } from "app/models";
@@ -210,7 +210,7 @@ export const node = new FixtureFactory<Node>(Node, {
     isDedicated: true,
 });
 
-export const subscription = new FixtureFactory<Subscription>(Subscription, {
+export const subscription = new FixtureFactory<ArmSubscription>(ArmSubscription, {
     id: "/subscriptions/sub-id-xyz",
     subscriptionId: "sub-id-xyz",
     tenantId: "tenant-id",
@@ -234,13 +234,9 @@ export const account = new FixtureFactory<ArmBatchAccount>(ArmBatchAccount, {
 
 export const application = new FixtureFactory<BatchApplication>(BatchApplication, {
     id: "app-1",
-    displayName: "test application",
-    allowUpdates: true,
-    defaultVersion: null,
-    packages: null,
 });
 
-export const applicationPackage = new FixtureFactory<ApplicationPackage>(ApplicationPackage, {
+export const applicationPackage = new FixtureFactory<BatchApplicationPackage>(BatchApplicationPackage, {
     version: "1",
     state: PackageState.active,
     format: "zip",

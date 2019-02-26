@@ -22,6 +22,10 @@ describe("PoolService", () => {
         httpMock = TestBed.get(HttpTestingController);
     });
 
+    afterEach(() => {
+        poolService.ngOnDestroy();
+    });
+
     it("get a pool", (done) => {
         poolService.get("pool-1").subscribe((pool: Pool) => {
             expect(pool instanceof Pool).toBe(true);
@@ -143,6 +147,21 @@ describe("PoolService", () => {
             targetLowPriorityNodes: 2,
             nodeDeallocationOption: NodeDeallocationOption.retaineddata,
         });
+        req.flush("");
+        httpMock.verify();
+    });
+
+    it("stop resizing a pool", (done) => {
+        poolService.stopResize("pool-1", 43).subscribe((res) => {
+            done();
+        });
+
+        const req = httpMock.expectOne({
+            url: "/pools/pool-1/stopresize?timeout=43",
+            method: "POST",
+        });
+        expect(req.request.body).toEqual(null);
+        expect(req.request.params.get("timeout")).toEqual("43");
         req.flush("");
         httpMock.verify();
     });

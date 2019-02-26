@@ -58,7 +58,7 @@ let nextUniqueId = 0;
         { provide: BL_OPTION_PARENT, useExisting: SelectComponent },
     ],
 })
-export class SelectComponent implements FormFieldControl<any>, OptionParent,
+export class SelectComponent<TValue = any> implements FormFieldControl<any>, OptionParent,
     ControlValueAccessor, AfterContentInit, OnDestroy {
 
     @Input() public placeholder = "";
@@ -123,7 +123,7 @@ export class SelectComponent implements FormFieldControl<any>, OptionParent,
 
     // Options
     @ContentChildren(SelectOptionComponent, { descendants: true })
-    public options: QueryList<SelectOptionComponent>;
+    public options: QueryList<SelectOptionComponent<TValue>>;
 
     @ContentChild(OptionTemplateDirective, { read: TemplateRef }) public optionTemplate: TemplateRef<any>;
 
@@ -170,6 +170,7 @@ export class SelectComponent implements FormFieldControl<any>, OptionParent,
     }
 
     private _propagateChange: (value: any) => void;
+    private _touchedFn: () => void;
     private _optionsMap: Map<any, SelectOptionComponent> = new Map();
     public get dropdownId() {
         return this.id + "-dropdown";
@@ -235,7 +236,7 @@ export class SelectComponent implements FormFieldControl<any>, OptionParent,
     }
 
     public registerOnTouched(fn: any): void {
-        // nothing yet
+        this._touchedFn = fn;
     }
 
     public clickSelectButton(event: Event) {
@@ -338,7 +339,7 @@ export class SelectComponent implements FormFieldControl<any>, OptionParent,
 
     public selectOption(option: SelectOptionComponent | null) {
         this._keyNavigator.focusItem(option);
-
+        let changed = false;
         if (this.multiple) {
             if (option) {
                 if (this.selected.has(option.value)) {
@@ -347,15 +348,25 @@ export class SelectComponent implements FormFieldControl<any>, OptionParent,
                     this.selected.add(option.value);
                 }
             }
+            changed = true;
         } else {
             if (option) {
-                this.selected = new Set([option.value]);
+                if (!this.selected.has(option.value)) {
+                    changed = true;
+                    this.selected = new Set([option.value]);
+                }
             } else {
-                this.selected = new Set([]);
+                if (this.selected.size !== 0) {
+                    changed = true;
+                    this.selected = new Set([]);
+                }
             }
             this.closeDropdown();
         }
-        this.notifyChanges();
+
+        if (changed) {
+            this.notifyChanges();
+        }
         this.changeDetector.markForCheck();
     }
 
@@ -366,6 +377,9 @@ export class SelectComponent implements FormFieldControl<any>, OptionParent,
     }
 
     public notifyChanges() {
+        if (this._touchedFn) {
+            this._touchedFn();
+        }
         if (this._propagateChange) {
             this._propagateChange(this.value);
         }

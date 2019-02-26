@@ -2,10 +2,10 @@ import { Component, DebugElement, NO_ERRORS_SCHEMA } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { BrowserDynamicTestingModule } from "@angular/platform-browser-dynamic/testing";
-import { I18nTestingModule } from "@batch-flask/core/testing";
+import { UserConfigurationService } from "@batch-flask/core";
+import { I18nTestingModule, MockUserConfigurationService } from "@batch-flask/core/testing";
 import { MockElectronRemote, MockElectronShell } from "@batch-flask/electron/testing";
-import { File, FileLoader, I18nUIModule } from "@batch-flask/ui";
-import { BatchFlaskSettingsService } from "@batch-flask/ui/batch-flask-settings";
+import { File, FileLoader } from "@batch-flask/ui";
 import { ButtonsModule } from "@batch-flask/ui/buttons";
 import { CardComponent } from "@batch-flask/ui/card";
 import { LoadingComponent } from "@batch-flask/ui/loading";
@@ -14,15 +14,17 @@ import { click } from "test/utils/helpers";
 import { NotificationServiceMock } from "test/utils/mocks";
 import { FileTooLargeComponent } from "../file-too-large";
 import { FileTypeAssociationService } from "../file-type-association";
+import { FileViewerConfig } from "../file-viewer/file-viewer";
 import { ImageFileViewerComponent } from "../image-file-viewer";
 import { FileViewerContainerComponent } from "./file-viewer-container.component";
 import { FileViewerHeaderComponent } from "./file-viewer-header";
 
 @Component({
-    template: `<bl-file-viewer-container [fileLoader]="fileLoader"></bl-file-viewer-container>`,
+    template: `<bl-file-viewer-container [fileLoader]="fileLoader" [config]="config"></bl-file-viewer-container>`,
 })
 class TestComponent {
     public fileLoader: FileLoader;
+    public config: FileViewerConfig  = {};
 }
 
 const file = new File({ name: "foo.ts", properties: { contentLength: 45 } } as any);
@@ -34,6 +36,7 @@ describe("FileViewerContainerComponent", () => {
     let shellSpy: MockElectronShell;
     let remoteSpy: MockElectronRemote;
     let notificationServiceSpy: NotificationServiceMock;
+    let configService: MockUserConfigurationService;
 
     let fsSpy;
     let propertyGetterSpy: jasmine.Spy;
@@ -49,9 +52,10 @@ describe("FileViewerContainerComponent", () => {
         shellSpy = new MockElectronShell();
         remoteSpy = new MockElectronRemote();
         notificationServiceSpy = new NotificationServiceMock();
+        configService = new MockUserConfigurationService({});
 
         TestBed.configureTestingModule({
-            imports: [I18nTestingModule, I18nUIModule, ButtonsModule],
+            imports: [I18nTestingModule, ButtonsModule],
             declarations: [
                 FileViewerContainerComponent, TestComponent,
                 FileViewerHeaderComponent, FileTooLargeComponent, CardComponent,
@@ -60,14 +64,14 @@ describe("FileViewerContainerComponent", () => {
             providers: [
                 FileTypeAssociationService,
                 {
-                    provide: BatchFlaskSettingsService, useValue: {
-                        settings: {},
-                        settingsObs: of({}),
+                    provide: UserConfigurationService, useValue: {
+                        config: of({}),
                     },
                 },
                 remoteSpy.asProvider(),
                 shellSpy.asProvider(),
                 notificationServiceSpy.asProvider(),
+                configService.asProvider(),
             ],
             schemas: [NO_ERRORS_SCHEMA],
         });
@@ -88,6 +92,24 @@ describe("FileViewerContainerComponent", () => {
             content: contentSpy,
         });
         fixture.detectChanges();
+    });
+
+    it("pass the config down to the header", () => {
+        const header: FileViewerHeaderComponent = de.query(By.directive(FileViewerHeaderComponent)).componentInstance;
+        expect(header.config).toEqual({
+            downloadEnabled: true,
+            tailable: false,
+        });
+
+        testComponent.config = {
+            tailable: true,
+        };
+        fixture.detectChanges();
+
+        expect(header.config).toEqual({
+            downloadEnabled: true,
+            tailable: true,
+        });
     });
 
     describe("when file extension is unkown", () => {

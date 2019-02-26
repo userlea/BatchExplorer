@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { FormControl, FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { By } from "@angular/platform-browser";
 import { I18nTestingModule } from "@batch-flask/core/testing";
-import { I18nUIModule, SelectComponent, SelectModule } from "@batch-flask/ui";
-import { ArmBatchAccount, StorageAccount, Subscription } from "app/models";
+import { SelectComponent, SelectModule } from "@batch-flask/ui";
+import { ArmBatchAccount, ArmSubscription, StorageAccount } from "app/models";
 import { BatchAccountService, StorageAccountService } from "app/services";
 import { AutoStorageService } from "app/services/storage";
 import { List } from "immutable";
@@ -18,12 +18,12 @@ class TestComponent {
     public control = new FormControl<string>(null);
 }
 
-const sub1 = new Subscription({
+const sub1 = new ArmSubscription({
     id: "/subscriptions/sub1",
     subscriptionId: "sub1",
 });
 
-const sub2 = new Subscription({
+const sub2 = new ArmSubscription({
     id: "/subscriptions/sub2",
     subscriptionId: "sub2",
 });
@@ -69,7 +69,7 @@ describe("StorageAccountPickerComponent", () => {
             list: jasmine.createSpy("list").and.returnValue(of(List([storageAcc1, storageAcc2, storageAcc3]))),
         };
         TestBed.configureTestingModule({
-            imports: [SelectModule, FormsModule, ReactiveFormsModule, I18nTestingModule, I18nUIModule],
+            imports: [SelectModule, FormsModule, ReactiveFormsModule, I18nTestingModule],
             declarations: [StorageAccountPickerComponent, TestComponent],
             providers: [
                 { provide: AutoStorageService, useValue: autoStorageServiceSpy },

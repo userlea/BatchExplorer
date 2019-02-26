@@ -1,12 +1,13 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { BasicListGetter, DataCache, UserConfigurationService } from "@batch-flask/core";
-import { File, FileLoader, FileNavigator, FileSystemService } from "@batch-flask/ui";
+import { FileSystemService } from "@batch-flask/electron";
+import { File, FileLoader, FileNavigator } from "@batch-flask/ui";
 import { NcjTemplateType } from "app/models";
+import { BEUserDesktopConfiguration } from "common";
 import * as path from "path";
 import { BehaviorSubject, Observable, from } from "rxjs";
 import { filter } from "rxjs/operators";
 import stripBom from "strip-bom";
-import { BEUserDesktopConfiguration } from "../user-configuration/be-user-configuration.model";
 
 export interface LocalTemplateFolder {
     path: string;
@@ -150,6 +151,6 @@ export class LocalTemplateService implements OnDestroy {
     }
 
     private async _findTemplatesInFolder(folder: string): Promise<string[]> {
-        return this.fs.glob(path.join(folder, "**/*.template.json"));
+        return this.fs.glob(path.join(folder, "**/*.json"));
     }
 }

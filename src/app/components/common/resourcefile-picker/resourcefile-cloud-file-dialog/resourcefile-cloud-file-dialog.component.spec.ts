@@ -7,8 +7,8 @@ import { ListResponse } from "@batch-flask/core";
 import {
     I18nTestingModule, MockControlValueAccessorComponent, controlValueAccessorProvider,
 } from "@batch-flask/core/testing";
-import { File, FileExplorerConfig, FormModule, I18nUIModule } from "@batch-flask/ui";
-import { ArmBatchAccount, StorageAccount, Subscription } from "app/models";
+import { File, FileExplorerConfig, FormModule } from "@batch-flask/ui";
+import { ArmBatchAccount, ArmSubscription, StorageAccount } from "app/models";
 import { BatchAccountService, StorageAccountService } from "app/services";
 import { AutoStorageService, StorageBlobService, StorageContainerService } from "app/services/storage";
 import { BlobUtilities } from "azure-storage";
@@ -45,7 +45,7 @@ class FakeBlobFileBrowserComponent {
     @Output() public activeFileChange = new EventEmitter<string>();
 }
 
-const sub1 = new Subscription({
+const sub1 = new ArmSubscription({
     id: "/subscriptions/sub1",
     subscriptionId: "sub1",
 });
@@ -97,7 +97,6 @@ describe("ResourceFileCloudFileDialogComponent", () => {
         TestBed.configureTestingModule({
             imports: [
                 I18nTestingModule,
-                I18nUIModule,
                 FormsModule,
                 ReactiveFormsModule,
                 FormModule,

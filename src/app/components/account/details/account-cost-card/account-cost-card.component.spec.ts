@@ -2,19 +2,19 @@ import { Component, DebugElement } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { I18nTestingModule } from "@batch-flask/core/testing";
-import { ChartsModule, I18nUIModule } from "@batch-flask/ui";
-import { ArmBatchAccount, LocalBatchAccount, Subscription } from "app/models";
+import { ChartsModule } from "@batch-flask/ui";
+import { ArmBatchAccount, ArmSubscription, LocalBatchAccount } from "app/models";
 import { BatchAccountService, Theme, ThemeService } from "app/services";
 import { UsageDetail, UsageDetailsService, UsageDetailsUnsupportedSubscription } from "app/services/azure-consumption";
 import { BehaviorSubject, of, throwError } from "rxjs";
 import { AccountCostCardComponent } from "./account-cost-card.component";
 
-const sub1 = new Subscription({
+const sub1 = new ArmSubscription({
     id: "/subscriptions/sub1",
     subscriptionId: "sub1",
 });
 
-const internalSub = new Subscription({
+const internalSub = new ArmSubscription({
     id: "/subscriptions/internal-1",
     subscriptionId: "internal-1",
 });
@@ -156,7 +156,7 @@ describe("AccountCostCardComponent", () => {
         };
 
         TestBed.configureTestingModule({
-            imports: [I18nTestingModule, I18nUIModule, ChartsModule],
+            imports: [I18nTestingModule, ChartsModule],
             declarations: [AccountCostCardComponent, TestComponent],
             providers: [
                 { provide: UsageDetailsService, useValue: usageServiceSpy },

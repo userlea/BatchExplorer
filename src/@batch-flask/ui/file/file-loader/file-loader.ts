@@ -1,17 +1,17 @@
-import { ServerError } from "@batch-flask/core";
-import { FileSystemService } from "@batch-flask/ui/electron";
+import { ServerError, isNotNullOrUndefined } from "@batch-flask/core";
+import { FileSystemService } from "@batch-flask/electron";
 import { CloudPathUtils, exists, log } from "@batch-flask/utils";
 import * as path from "path";
 import { BehaviorSubject, Observable, from, of } from "rxjs";
 import {
     catchError, concatMap, distinctUntilChanged, filter,
-    map, publishReplay, refCount, share, skip, switchMap, take, tap,
+    mapTo, publishReplay, refCount, share, skip, switchMap, take, tap,
 } from "rxjs/operators";
 import { File } from "../file.model";
 
 export type PropertiesFunc = () => Observable<File>;
 export type ContentFunc = (options: FileLoadOptions) => Observable<FileLoadResult>;
-export type DownloadFunc = (destination: string) => Observable<boolean>;
+export type DownloadFunc = (destination: string) => Observable<any>;
 
 export interface FileLoaderConfig {
     filename: string;
@@ -39,10 +39,6 @@ export interface FileLoadOptions {
 
 export interface FileLoadResult {
     content: string;
-}
-
-function isNotNullOrUndefined<T>(input: null | undefined | T): input is T {
-    return input != null;
 }
 
 export class FileLoader {
@@ -87,7 +83,7 @@ export class FileLoader {
                 } else if (a instanceof ServerError || b instanceof ServerError) {
                     return false;
                 } else {
-                    return a!.equals(b!);
+                    return a.equals(b);
                 }
             }),
             publishReplay(1),
@@ -112,7 +108,11 @@ export class FileLoader {
                 if (error && error.status && !this._logIgnoreError.includes(error.status)) {
                     log.error("Error getting the file properties!", Object.assign({}, error));
                 }
-                return of(error);
+                if (error instanceof ServerError) {
+                    return of(error);
+                } else {
+                    return of(null);
+                }
             }),
             tap(value => this._properties.next(value)),
         );
@@ -127,7 +127,7 @@ export class FileLoader {
             const checkDirObs = from(this._fs.ensureDir(path.dirname(dest)));
             return checkDirObs.pipe(
                 switchMap(() => this._download!(dest)),
-                map(_ => dest),
+                mapTo(dest),
                 share(),
             );
         }
@@ -176,7 +176,7 @@ export class FileLoader {
     private _hashFilename(file: File) {
         const hash = file.properties.lastModified.getTime().toString(36);
         // clean any unwanted : characters from the file path
-        const cleaned = file.name.replace(":", "");
+        const cleaned = decodeURIComponent(file.name).replace(":", "");
         const segements = cleaned.split(/[\\\/]/);
         const filename = segements.pop();
         segements.push(`${hash}.${filename}`);

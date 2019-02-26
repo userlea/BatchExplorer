@@ -10,21 +10,16 @@ import { PoolHomeComponent } from "app/components/pool/home/pool-home.component"
 import { StartTaskModule } from "app/components/pool/start-task";
 import { TaskBaseModule } from "app/components/task/base";
 import { NetworkConfigurationModule } from "./network-configuration";
-import { UserAccountModule } from "./user-account";
+import { UserAccountsPickerModule } from "./user-accounts-picker";
 
 import {
     AppLicensePickerComponent,
     AutoScaleFormulaPickerModule,
-    ContaienrImagesPickerComponent,
-    ContainerConfigurationPickerComponent,
-    ContainerRegistryPickerComponent,
-    CustomImagePickerComponent,
     DeallocationOptionPickerComponent,
     DeletePoolDialogComponent,
     LicenseEulaDialogComponent,
-    OsOfferTileComponent,
     PoolCreateBasicDialogComponent,
-    PoolOsPickerComponent,
+    PoolOSPickerModule,
     PoolResizeDialogComponent,
     PoolScalePickerComponent,
     VmSizePickerComponent,
@@ -35,21 +30,28 @@ import { PoolRoutingModule } from "./pool-routing.module";
 
 const components = [
     AppLicensePickerComponent,
-    ContainerConfigurationPickerComponent, ContaienrImagesPickerComponent, ContainerRegistryPickerComponent,
-    DeallocationOptionPickerComponent, DeletePoolDialogComponent, LicenseEulaDialogComponent, OsOfferTileComponent,
-    PoolAdvancedFilterComponent, PoolCreateBasicDialogComponent, PoolHomeComponent, PoolListComponent,
-    PoolOsPickerComponent, PoolScalePickerComponent, VmSizePickerComponent, VmSizePickerFilterComponent,
-    PoolResizeDialogComponent, CustomImagePickerComponent,
+    DeallocationOptionPickerComponent,
+    DeletePoolDialogComponent,
+    LicenseEulaDialogComponent,
+    PoolAdvancedFilterComponent,
+    PoolCreateBasicDialogComponent,
+    PoolHomeComponent,
+    PoolListComponent,
+    PoolScalePickerComponent,
+    VmSizePickerComponent,
+    VmSizePickerFilterComponent,
+    PoolResizeDialogComponent,
 ];
 
 const modules = [
     TaskBaseModule,
+    PoolOSPickerModule,
     ...commonModules,
 ];
 
 const publicModules = [
     StartTaskModule,
-    UserAccountModule,
+    UserAccountsPickerModule,
     AutoScaleFormulaPickerModule,
     PoolBaseModule,
     PoolDetailsModule,

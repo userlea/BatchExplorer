@@ -5,7 +5,6 @@ import { RouterModule } from "@angular/router";
 import { MaterialModule } from "@batch-flask/core";
 
 // components
-import { WorkspaceModule } from "@batch-flask/ui/workspace";
 import { AbstractListModule } from "./abstract-list";
 import { ActivityModule } from "./activity";
 import { AdvancedFilterModule } from "./advanced-filter";
@@ -22,7 +21,6 @@ import { DialogsModule } from "./dialogs";
 import { DropdownModule } from "./dropdown";
 import { DurationPickerModule } from "./duration-picker";
 import { EditorModule } from "./editor";
-import { ElectronModule } from "./electron";
 import { EntityCommandsListModule } from "./entity-commands-list";
 import { FileModule } from "./file";
 import { FocusSectionModule } from "./focus-section";
@@ -53,6 +51,7 @@ import { TimespanComponent } from "./timespan";
 import { ToolbarModule } from "./toolbar";
 import { VirtualScrollModule } from "./virtual-scroll";
 import { VTabsModule } from "./vtabs";
+import { WorkspaceModule } from "./workspace";
 
 // Add submodules there
 const modules = [
@@ -96,7 +95,6 @@ const modules = [
     SummaryCardModule,
     VirtualScrollModule,
     VTabsModule,
-    ElectronModule,
     WorkspaceModule,
     DatetimePickerModule,
 ];

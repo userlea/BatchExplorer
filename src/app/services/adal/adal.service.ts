@@ -1,69 +1,56 @@
 import { Injectable, NgZone, OnDestroy } from "@angular/core";
-import { AccessToken, AccessTokenCache, ServerError, isNotNullOrUndefined } from "@batch-flask/core";
-import { ElectronRemote, NotificationService } from "@batch-flask/ui";
+import { AccessToken, AccessTokenCache, ServerError } from "@batch-flask/core";
+import { AADResourceName } from "@batch-flask/core/azure-environment";
+import { ElectronRemote } from "@batch-flask/electron";
+import { wrapMainObservable } from "@batch-flask/electron/utils";
+import { NotificationService } from "@batch-flask/ui";
 import { BatchExplorerService } from "app/services/batch-explorer.service";
 import { AADService } from "client/core/aad";
 import { AADUser } from "client/core/aad/adal/aad-user";
 import { Constants } from "common";
-import { BehaviorSubject, Observable, Subscription, from } from "rxjs";
-import { filter } from "rxjs/operators";
+import { Observable, from, throwError } from "rxjs";
+import { catchError, publishReplay, refCount } from "rxjs/operators";
 
 @Injectable({ providedIn: "root" })
 export class AdalService implements OnDestroy {
     public tenantsIds: Observable<string[]>;
     public currentUser: Observable<AADUser>;
 
-    private aadService: AADService;
+    private _aadService: AADService;
     private tokenCache = new AccessTokenCache();
     private _waitingPromises: StringMap<Promise<AccessToken>> = {};
-    private _currentUser = new BehaviorSubject<AADUser>(null);
-    private _tenantsIds = new BehaviorSubject<string[]>([]);
-    private _subs: Subscription[] = [];
 
     constructor(
-        private zone: NgZone,
-        private remote: ElectronRemote,
+        zone: NgZone,
         batchExplorer: BatchExplorerService,
+        private remote: ElectronRemote,
         private notificationService: NotificationService) {
-        this.currentUser = this._currentUser.pipe(filter(isNotNullOrUndefined));
-        this.tenantsIds = this._tenantsIds.asObservable();
+        this._aadService = batchExplorer.aadService;
 
-        this.aadService = batchExplorer.aadService;
-
-        this._subs.push(this.aadService.currentUser.subscribe((value) => {
-            this._currentUser.next(value);
-        }));
-
-        // Need to do this as aadService.tenantIds is in the node processs and electron lose information in the transfer
-        this._subs.push(this.aadService.tenantsIds.subscribe({
-            next: (val) => {
-                this.zone.run(() => {
-                    this._tenantsIds.next(val);
-                });
-            },
-            error: (error) => {
+        this.currentUser = wrapMainObservable(this._aadService.currentUser, zone);
+        this.tenantsIds = wrapMainObservable(this._aadService.tenantsIds, zone).pipe(
+            catchError((error) => {
                 const serverError = new ServerError(error);
-                this._tenantsIds.error(serverError);
                 this.notificationService.error(
                     `Error loading tenants. This could be an issue with proxy settings or your connection.`,
                     serverError.toString());
-            },
-        }));
+                return throwError(serverError);
+            }),
+            publishReplay(1),
+            refCount(),
+        );
     }
 
     public ngOnDestroy() {
-        this._tenantsIds.complete();
-        this._currentUser.complete();
-        this._subs.forEach(x => x.unsubscribe());
-
+        // Nothing to do
     }
 
     public logout() {
-        this.aadService.logout();
+        this._aadService.logout();
         this._waitingPromises = {};
     }
 
-    public accessTokenFor(tenantId: string, resource: string = null) {
+    public accessTokenFor(tenantId: string, resource: AADResourceName = null) {
         return from(this.accessTokenDataAsync(tenantId, resource).then(x => x.access_token));
     }
 
@@ -72,7 +59,7 @@ export class AdalService implements OnDestroy {
      * @param tenantId
      * @param resource
      */
-    public accessTokenData(tenantId: string, resource: string = null): Observable<AccessToken> {
+    public accessTokenData(tenantId: string, resource: AADResourceName = null): Observable<AccessToken> {
         return from(this.accessTokenDataAsync(tenantId, resource));
     }
 
@@ -81,7 +68,7 @@ export class AdalService implements OnDestroy {
      * @param tenantId
      * @param resource
      */
-    public async accessTokenDataAsync(tenantId: string, resource: string = null): Promise<AccessToken> {
+    public async accessTokenDataAsync(tenantId: string, resource: AADResourceName = null): Promise<AccessToken> {
         const key = `${tenantId}/${resource}`;
         if (key in this._waitingPromises) {
             return this._waitingPromises[key];
@@ -99,6 +86,9 @@ export class AdalService implements OnDestroy {
             this.tokenCache.storeToken(tenantId, resource, token);
             delete this._waitingPromises[key];
             return token;
+        }).catch((e) =>  {
+            delete this._waitingPromises[key];
+            return Promise.reject(e);
         });
         this._waitingPromises[key] = promise;
         return promise;
