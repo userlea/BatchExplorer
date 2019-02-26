@@ -23,6 +23,11 @@ export interface AADResources {
      * Application insights api
      */
     appInsights: string;
+
+    /**
+     * Azure storage
+     */
+    storage: string;
 }
 
 export type AADResourceName = keyof AADResources;
@@ -40,11 +45,6 @@ export interface AzureEnvironmentAttributes extends AADResources {
      * Azure storage endpoint
      */
     storageEndpoint: string;
-
-    /**
-     * Azure storage resource URL
-     */
-    storageUrl: string;
 }
 
 // tslint:disable:variable-name
@@ -59,7 +59,7 @@ export class AzureEnvironment implements AzureEnvironmentAttributes {
         aadGraph: "https://graph.windows.net/",
         appInsights: "https://api.applicationinsights.io/",
         storageEndpoint: "core.windows.net",
-        storageUrl: "https://storage.azure.com/",
+        storage: "https://storage.azure.com/",
     });
 
     public static AzureChina = new AzureEnvironment({
@@ -72,7 +72,7 @@ export class AzureEnvironment implements AzureEnvironmentAttributes {
         aadGraph: "https://graph.chinacloudapi.cn/",
         appInsights: "https://api.applicationinsights.io/",
         storageEndpoint: "core.chinacloudapi.cn",
-        storageUrl: "https://storage.chinacloudapi.cn/",
+        storage: "https://storage.chinacloudapi.cn/",
     });
 
     public static AzureGermany = new AzureEnvironment({
@@ -85,7 +85,7 @@ export class AzureEnvironment implements AzureEnvironmentAttributes {
         aadGraph: "https://graph.cloudapi.de/",
         appInsights: "https://api.applicationinsights.io/",
         storageEndpoint: "core.cloudapi.de",
-        storageUrl: "https://storage.cloudapi.de/",
+        storage: "https://storage.cloudapi.de/",
     });
 
     public static AzureUSGov = new AzureEnvironment({
@@ -98,7 +98,7 @@ export class AzureEnvironment implements AzureEnvironmentAttributes {
         aadGraph: "https://graph.windows.net/",
         appInsights: "https://api.applicationinsights.io/",
         storageEndpoint: "core.usgovcloudapi.net",
-        storageUrl: "https://storage.usgovcloudapi.net/",
+        storage: "https://storage.usgovcloudapi.net/",
     });
 
     public id: string;
@@ -110,7 +110,7 @@ export class AzureEnvironment implements AzureEnvironmentAttributes {
     public aadGraph: string;
     public appInsights: string;
     public storageEndpoint: string;
-    public storageUrl: string;
+    public storage: string;
 
     constructor(attr: AzureEnvironmentAttributes) {
         Object.assign(this, attr);

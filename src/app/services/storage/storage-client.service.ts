@@ -32,10 +32,6 @@ export interface StorageKeyCachedItem {
 
 @Injectable({ providedIn: "root" })
 export class StorageClientService {
-    public get serviceUrl() {
-        return this.batchExplorer.azureEnvironment.storageUrl;
-    }
-
     public hasAutoStorage: Observable<boolean>;
     public hasArmAutoStorage: Observable<boolean>;
 
@@ -65,9 +61,9 @@ export class StorageClientService {
     public get(storageAccountId: string): Observable<ServiceURL> {
         return this.accountService.currentAccount.pipe(
             take(1),
-            switchMap((account) => {
+            switchMap((account): Observable<ServiceURL> => {
                 if (account instanceof ArmBatchAccount) {
-                    return this.adal.accessTokenData(account.subscription.tenantId, this.serviceUrl).pipe(
+                    return this.adal.accessTokenData(account.subscription.tenantId, "storage").pipe(
                         map((accessToken) => {
                             if (this._serviceURL) {
                                 this._tokenCredential.token = accessToken.access_token;
@@ -77,7 +73,7 @@ export class StorageClientService {
                                 this._serviceURL = new ServiceURL(
                                     this._getAccountUrl(storageAccountId), this._pipeline);
                             }
-                            return this._serviceURL;
+                            return this._serviceURL as ServiceURL;
                         }),
                     );
                 } else {
