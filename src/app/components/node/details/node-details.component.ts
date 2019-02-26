@@ -1,14 +1,12 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
-import { Subscription } from "rxjs";
-
 import { EntityView, autobind } from "@batch-flask/core";
 import { DialogService } from "@batch-flask/ui/dialogs";
 import { Node, Pool } from "app/models";
 import { NodeParams, NodeService, PoolParams, PoolService } from "app/services";
+import { Subscription } from "rxjs";
 import { NodeCommands, UploadNodeLogsDialogComponent } from "../action";
 
-import { NodeLogsService } from "app/services/azure-batch/node-logs";
 import "./node-details.scss";
 
 @Component({
@@ -39,7 +37,6 @@ export class NodeDetailsComponent implements OnInit, OnDestroy {
         public commands: NodeCommands,
         private route: ActivatedRoute,
         private nodeService: NodeService,
-        private nodeLogsService: NodeLogsService,
         private poolService: PoolService,
         private dialog: DialogService,
         changeDetector: ChangeDetectorRef) {
@@ -80,8 +77,6 @@ export class NodeDetailsComponent implements OnInit, OnDestroy {
             this.data.fetch();
             this.poolData.params = { id: this.poolId };
             this.poolData.fetch();
-
-            this.nodeLogsService.loadLogs(this.poolId, this.nodeId).subscribe(x => console.log("Result", x));
         }
     }
 

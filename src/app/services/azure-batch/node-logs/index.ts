@@ -1,1 +1,1 @@
-export * from "./node-logs.service"
+export * from "./node-logs.service";

@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DateTime } from "luxon";
-import { Observable, forkJoin, of } from "rxjs";
-import { catchError, map, share, tap } from "rxjs/operators";
+import { Observable, of } from "rxjs";
+import { catchError, map, share } from "rxjs/operators";
 import { FileService } from "../file";
 
 export const NODE_LOGS_SEPARATOR = "■";
@@ -71,7 +71,7 @@ export interface NodeLogEntry {
 
 export enum NodeLogLevel {
     Info = "info",
-    Warn = "warn",
+    Warning = "warning",
     Error = "error",
     Critical = "critical",
     Debug = "debug",
