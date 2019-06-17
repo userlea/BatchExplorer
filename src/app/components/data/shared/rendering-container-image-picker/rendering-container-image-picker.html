@@ -1,7 +1,7 @@
 <div>
     <div class="grow">
-        <div class="gcol">
-            <bl-form-field *ngIf="appVersions">
+        <div class="gcol" *ngIf="_shouldShowAppVersionSelector">
+            <bl-form-field >
                 <bl-select class="app-version-picker" [formControl]="appVersionControl"  placeholder="{{appDisplay}} Version">
                     <bl-option *ngFor="let version of appVersions;trackBy: trackAppVersion" [value]=version [label]="version"></bl-option>
                 </bl-select>

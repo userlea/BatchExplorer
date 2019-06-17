@@ -36,9 +36,11 @@ export class RenderingContainerImagePickerComponent implements ControlValueAcces
         return this._upperCaseFirstChar(this.renderEngine);
     }
 
+    public anySelectorString = "<any>";
     public removeSelectionOption = "---- Remove Selection ----";
     public appVersionControl = new FormControl();
     public rendererVersionControl = new FormControl();
+    public _shouldShowAppVersionSelector: boolean;
 
     public appVersions: string[];
     public rendererVersions: string[];
@@ -73,12 +75,17 @@ export class RenderingContainerImagePickerComponent implements ControlValueAcces
                     app, renderEngine, imageReferenceId);
             }),
         ).subscribe((containerImages) => {
+            this._shouldShowAppVersionSelector = true;
             this.containerImagesMap = this.buildContainerImagesMap(containerImages);
             this.allAppVersions = Array.from(new Set(containerImages.map(image => image.appVersion)))
                 .sort((a, b) => a.localeCompare(b));
             this.allRendererVersions = Array.from(new Set(containerImages.map(image => image.rendererVersion)))
                 .sort((a, b) => a.localeCompare(b));
             this.appVersions = this.allAppVersions;
+            if (this.appVersions.length <= 1 ) {
+                this.appVersionControl.setValue(this.anySelectorString);
+                this._shouldShowAppVersionSelector = false;
+            }
             this.rendererVersions = this.allRendererVersions;
             this.changeDetector.markForCheck();
         });
@@ -96,7 +103,7 @@ export class RenderingContainerImagePickerComponent implements ControlValueAcces
                     this.appVersions = this.allAppVersions;
                     this.rendererVersions = this.allRendererVersions;
                 }
-            } else if (appVersion) {
+            } else if (appVersion && appVersion !== this.anySelectorString ) {
                 this.rendererVersions = this.allRendererVersions.filter(rendererVersion =>
                     this.containerImagesMapContains(appVersion, rendererVersion));
 
@@ -131,12 +138,18 @@ export class RenderingContainerImagePickerComponent implements ControlValueAcces
             } else if (rendererVersion) {
                 this.appVersions = this.allAppVersions.filter(appVersion =>
                     this.containerImagesMapContains(appVersion, rendererVersion));
-                this.rendererVersions = this.ensureArrayIncludesRemoveOption(this.rendererVersions);
+
+                if (appVersion !== this.anySelectorString) {
+                    this.rendererVersions = this.ensureArrayIncludesRemoveOption(this.rendererVersions);
+                }
 
                 if (appVersion) {
                     this.containerImage = this.getFromContainerImagesMap(appVersion, rendererVersion)
                         .containerImage;
-                    this.appVersions = this.ensureArrayIncludesRemoveOption(this.appVersions);
+
+                    if (appVersion !== this.anySelectorString) {
+                        this.appVersions = this.ensureArrayIncludesRemoveOption(this.appVersions);
+                    }
                 }
             }
 
@@ -166,8 +179,10 @@ export class RenderingContainerImagePickerComponent implements ControlValueAcces
                     }
                 });
         } else {
-            this.appVersionControl.setValue(null);
-            this.rendererVersionControl.setValue(null);
+            if (this.appVersionControl.value !== this.anySelectorString) {
+                this.appVersionControl.setValue(null);
+                this.rendererVersionControl.setValue(null);
+            }
         }
     }
 
@@ -208,6 +223,10 @@ export class RenderingContainerImagePickerComponent implements ControlValueAcces
     }
 
     private getFromContainerImagesMap(appVersion: string, rendererVersion: string): RenderingContainerImage {
+        if (appVersion === this.anySelectorString) {
+            return Array.from(this.containerImagesMap.values())
+                .find(image => image.rendererVersion === rendererVersion);
+        }
         return this.containerImagesMap.get(this.buildImagesMapKey(appVersion, rendererVersion));
     }
 
