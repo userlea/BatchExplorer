@@ -35,6 +35,7 @@ export class CustomImagePickerComponent implements OnInit, OnDestroy, ControlVal
     @Input() public id = `bl-custom-image-picker-${idCounter++}`;
 
     public customImages: Resource[] = [];
+    public sigVersions: Resource[] = [];
     public nodeAgentSkus: NodeAgentSku[] = [];
 
     public customImage = new FormControl();
@@ -94,11 +95,12 @@ export class CustomImagePickerComponent implements OnInit, OnDestroy, ControlVal
                 }
                 const customImages = this.computeService.listCustomImages(subscriptionId, location);
                 const sigImages = this.computeService.listSIG(subscriptionId, location);
-                return forkJoin(customImages, sigImages, (images, sigVersions) => [...images, ...sigVersions]);
+                return forkJoin(customImages, sigImages, (images, sigVersions) => ({images, sigVersions}));
             }),
         ).subscribe({
             next: (resources) => {
-                this.customImages = resources;
+                this.customImages = resources.images;
+                this.sigVersions = resources.sigVersions;
                 this.loadingStatus = LoadingStatus.Ready;
                 this.changeDetector.markForCheck();
             },
