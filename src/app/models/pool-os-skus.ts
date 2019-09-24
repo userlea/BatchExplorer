@@ -87,7 +87,12 @@ export class PoolOsSkus {
 
         this.allOffers = ObjectUtils.values(offers);
         this.renderingOffers = this.allOffers.filter(x => x.publisher === renderingPublisher);
-        this.vmOffers = this.allOffers.filter(x => !(x.name in dataScienceVms) && x.publisher !== renderingPublisher);
+        this.vmOffers = this.allOffers.filter(x => {
+            return !(x.name in dataScienceVms) && x.publisher !== renderingPublisher;
+        }).map(x => {
+            x.skus = x.skus.sort((a, b) => a.name.localeCompare(b.name));
+            return x;
+        });
         this.dataScienceOffers = this.allOffers
             .filter(x => (x.name in dataScienceVms) && x.publisher !== renderingPublisher);
         this.dockerOffers = ObjectUtils.values(dockerOffers);

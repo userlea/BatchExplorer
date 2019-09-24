@@ -140,7 +140,7 @@ export class PoolUtils {
         if (pool.virtualMachineConfiguration) {
             const config = pool.virtualMachineConfiguration;
             if (!config.imageReference) {
-                return "Unkown";
+                return "Unknown";
             }
 
             if (config.imageReference.virtualMachineImageId) {
