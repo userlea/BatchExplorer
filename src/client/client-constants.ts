@@ -48,6 +48,7 @@ const urls = {
     proxyCredentials: clientFileUrl("proxy/proxy-credentials-window/proxy-credentials.html"),
     manualProxyConfiguration:
         clientFileUrl("proxy/manual-proxy-configuration-window/manual-proxy-configuration-window.html"),
+    tenantSelection: clientFileUrl("core/aad/authentication/tenant-selection-window.html"),
     recover: {
         dev: `file://${root}/src/client/recover-window/recover-window.html`,
         prod: `file://${root}/build/client/recover-window/recover-window.html`,

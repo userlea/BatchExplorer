@@ -41,10 +41,11 @@ export class AADService {
     private _authenticationState = new BehaviorSubject<AuthenticationState | null>(null);
     private _accessTokenService: AccessTokenService;
     private _userDecoder: UserDecoder;
-    private _newAccessTokenSubject: StringMap<Deferred<AccessToken>> = {};
+    private _newAccessTokenSubject: StringMap<Deferred<AccessToken | null>> = {};
 
     private _currentUser = new BehaviorSubject<AADUser | null>(null);
-    private _tenantsIds = new BehaviorSubject<string[]>([]);
+    private _allTenantIds = new BehaviorSubject<string[]>([]);
+    private _chosenTenantIds = new BehaviorSubject<string[]>([]);
     private _tokenCache: AccessTokenCache;
 
     constructor(
@@ -57,7 +58,7 @@ export class AADService {
         this._tokenCache = new AccessTokenCache(secureStore);
         this._userDecoder = new UserDecoder();
         this.currentUser = this._currentUser.asObservable();
-        this.tenantsIds = this._tenantsIds.asObservable();
+        this.tenantsIds = this._chosenTenantIds.asObservable();
         this.userAuthorization = new AuthenticationService(this.app, adalConfig);
         this._accessTokenService = new AccessTokenService(properties, adalConfig);
         this.authenticationState = this._authenticationState.asObservable();
@@ -74,6 +75,7 @@ export class AADService {
     public async init() {
         await Promise.all([
             this._retrieveUserFromLocalStorage(),
+            this._retrieveChosenTenantIdsFromLocalStorage(),
             this._tokenCache.init(),
         ]);
     }
@@ -94,7 +96,8 @@ export class AADService {
     public async logout() {
         await this.localStorage.removeItem(Constants.localStorageKey.currentUser);
         this._tokenCache.clear();
-        this._tenantsIds.next([]);
+        this._allTenantIds.next([]);
+        this._chosenTenantIds.next([]);
         await this._clearUserSpecificCache();
         for (const [, window] of this.app.windows) {
             window.webContents.session.clearStorageData({ storages: ["localStorage"] });
@@ -104,7 +107,7 @@ export class AADService {
     }
 
     public async accessTokenFor(tenantId: string, resource?: AADResourceName) {
-        return this.accessTokenData(tenantId, resource).then(x => x.access_token);
+        return this.accessTokenData(tenantId, resource).then(x => x?.access_token);
     }
 
     /**
@@ -112,7 +115,7 @@ export class AADService {
      * @param tenantId
      * @param resource
      */
-    public async accessTokenData(tenantId: string, resource?: AADResourceName): Promise<AccessToken> {
+    public async accessTokenData(tenantId: string, resource?: AADResourceName): Promise<AccessToken | null> {
         resource = resource || "arm";
         if (this._tokenCache.hasToken(tenantId, resource)) {
             const token = this._tokenCache.getToken(tenantId, resource);
@@ -138,11 +141,11 @@ export class AADService {
         try {
             const tenantIds = await this._loadTenantIds();
 
-            this._tenantsIds.next(tenantIds);
+            this._allTenantIds.next(tenantIds);
             this._refreshAllAccessTokens();
         } catch (error) {
             log.error("Error retrieving tenants", error);
-            this._tenantsIds.error(ServerError.fromARM(error));
+            this._allTenantIds.error(ServerError.fromARM(error));
         }
     }
 
@@ -162,11 +165,27 @@ export class AADService {
     }
 
     /**
+     * Look into the localStorage to see if the user has chosen specific tenants
+     * to be authenticated against
+     */
+    private async _retrieveChosenTenantIdsFromLocalStorage() {
+        const tenantIdStr = await this.localStorage.getItem<string>(Constants.localStorageKey.chosenTenantIds);
+        if (tenantIdStr) {
+            try {
+                const chosenTenantIds = tenantIdStr.split(",");
+                this._chosenTenantIds.next(chosenTenantIds);
+            } catch (e) {
+                this.localStorage.removeItem(Constants.localStorageKey.chosenTenantIds);
+            }
+        }
+    }
+
+    /**
      * Retrieve a new access token using the refresh token if available or authorize the user and use authorization code
      * Will set the currentAccesToken.
      * @return Observable with access token object
      */
-    private async _retrieveNewAccessToken(tenantId: string, resource: AADResourceName): Promise<AccessToken> {
+    private async _retrieveNewAccessToken(tenantId: string, resource: AADResourceName): Promise<AccessToken | null> {
         const token = this._tokenCache.getToken(tenantId, resource);
         if (token && token.refresh_token) {
             return this._useRefreshToken(tenantId, resource, token.refresh_token);
@@ -193,15 +212,20 @@ export class AADService {
         const defer = this._newAccessTokenSubject[this._tenantResourceKey(tenantId, resource)];
 
         try {
-
             const result = await this._authorizeUser(tenantId, forceReLogin);
-            this._processUserToken(result.id_token);
-            const tid = tenantId === "common" ? this._currentUser.value!.tid : tenantId;
-            const token = await this._accessTokenService.redeem(resource, tid!, result.code);
-            this._processAccessToken(tenantId, resource, token);
-            delete this._newAccessTokenSubject[this._tenantResourceKey(tenantId, resource)];
-            defer.resolve(token);
-
+            if (result.skipped) {
+                // TODO: Display the fact that we skipped this tenant to the
+                //       user (somehow)
+                delete this._newAccessTokenSubject[this._tenantResourceKey(tenantId, resource)];
+                defer.resolve(null);
+            } else {
+                this._processUserToken(result.id_token);
+                const tid = tenantId === "common" ? this._currentUser.value!.tid : tenantId;
+                const token = await this._accessTokenService.redeem(resource, tid!, result.code);
+                this._processAccessToken(tenantId, resource, token);
+                delete this._newAccessTokenSubject[this._tenantResourceKey(tenantId, resource)];
+                defer.resolve(token);
+            }
         } catch (e) {
             log.error(`Error redeem auth code for a token for resource ${resource}`, e);
             delete this._newAccessTokenSubject[this._tenantResourceKey(tenantId, resource)];
@@ -226,7 +250,7 @@ export class AADService {
     private async _useRefreshToken(
         tenantId: string,
         resource: AADResourceName,
-        refreshToken: string): Promise<AccessToken> {
+        refreshToken: string): Promise<AccessToken | null> {
         try {
             const token = await this._accessTokenService.refresh(resource, tenantId, refreshToken);
             this._processAccessToken(tenantId, resource, token);
@@ -251,6 +275,19 @@ export class AADService {
         this.localStorage.setItem(Constants.localStorageKey.currentUser, JSON.stringify(user));
     }
 
+    /**
+     * Process the tenant IDs chosen by the user to auth against
+     */
+    private _processChosenTenantIds(chosenTenantIds: string[], storeChoice: boolean) {
+        this._chosenTenantIds.next(chosenTenantIds);
+        if (storeChoice) {
+            this.localStorage.setItem(Constants.localStorageKey.chosenTenantIds, chosenTenantIds.join(","));
+        } else {
+            // Make sure we clear out any previously stored tenant IDs
+            this.localStorage.removeItem(Constants.localStorageKey.chosenTenantIds);
+        }
+    }
+
     private _processAccessToken(tenantId: string, resource: string, token: AccessToken) {
         this._tokenCache.storeToken(tenantId, resource, token);
     }
@@ -259,7 +296,7 @@ export class AADService {
         const token = await this.accessTokenData("common");
 
         const headers = {
-            Authorization: `${token.token_type} ${token.access_token}`,
+            Authorization: `${token!.token_type} ${token!.access_token}`,
         };
         const options = { headers };
         const url = `${this.properties.azureEnvironment.arm}tenants?api-version=${Constants.ApiVersion.arm}`;
@@ -270,14 +307,29 @@ export class AADService {
     }
 
     private async _clearUserSpecificCache() {
+        this.localStorage.removeItem(Constants.localStorageKey.chosenTenantIds);
         this.localStorage.removeItem(Constants.localStorageKey.subscriptions);
         this.localStorage.removeItem(Constants.localStorageKey.selectedAccountId);
         await this._tokenCache.clear();
     }
 
     private async _refreshAllAccessTokens() {
-        const tenantIds = this._tenantsIds.value;
-        for (const tenantId of tenantIds) {
+        const allTenantIds = this._allTenantIds.value;
+        if (allTenantIds.length > 1) {
+            try {
+                // Prompt the user to select between tenants
+                const chosen = await this.userAuthorization.chooseTenants(allTenantIds);
+                if (chosen) {
+                    this._processChosenTenantIds(chosen, true);
+                } else {
+                    this._processChosenTenantIds(allTenantIds, false);
+                }
+            } catch (error) {
+                this._processChosenTenantIds(allTenantIds, false);
+            }
+        }
+
+        for (const tenantId of this._chosenTenantIds.value) {
             for (const resource of this._resources()) {
                 await this._retrieveNewAccessToken(tenantId, resource);
             }

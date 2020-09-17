@@ -16,6 +16,7 @@ export interface AuthorizeResult {
     id_token: string;
     session_state: string;
     state: string;
+    skipped?: boolean;
 }
 
 export interface AuthorizeResponseError {
@@ -67,10 +68,13 @@ export class AuthenticationService {
     private _currentAuthorization: AuthorizeQueueItem | null = null;
     private _state = new BehaviorSubject(AuthenticationState.None);
     private _logoutDeferred: Deferred<void> | null;
+    // private _app: BatchExplorerApplication;
 
     constructor(private app: BatchExplorerApplication, private config: AADConfig) {
+        // this._app = app;
         this.state = this._state.asObservable();
     }
+
     /**
      * Authorize the user.
      * @param silent If set to true it will not ask the user for prompt. (i.e prompt=none for AD)
@@ -126,6 +130,16 @@ export class AuthenticationService {
         return deferred.promise;
     }
 
+    /**
+     * Prompt the user to pick which tenants to auth against. Returns null
+     * if the user picks all tenants.
+     */
+    public async chooseTenants(tenantIds: string[] | null) {
+        // return this._app.askUserForAADTenantIds();
+        // return ["72f988bf-86f1-41af-91ab-2d7cd011db47"];
+        return null;
+    }
+
     private _authorizeNext() {
         if (this._currentAuthorization || this._authorizeQueue.length === 0) {
             return;
@@ -169,8 +183,19 @@ export class AuthenticationService {
      */
     private _setupEvents() {
         const authWindow = this.app.authenticationWindow;
-        authWindow.onRedirect(newUrl => this._handleCallback(newUrl));
-        authWindow.onNavigate(newUrl => this._handleNavigate(newUrl));
+        authWindow.onRedirect(newUrl => {
+            // Handle disabled user accounts. The error code comes back in the
+            // response which start with a string like this:
+            // urn:ietf:wg:oauth:2.0:oob#error=login_required&error_description=AADSTS50057%3a+The+user+account+is+disabled
+            if (newUrl.contains("AADSTS50057")) {
+                this._skipToNextAuthorization(newUrl);
+            } else {
+                this._handleCallback(newUrl);
+            }
+        });
+        authWindow.onNavigate(newUrl => {
+            this._handleNavigate(newUrl);
+        });
         authWindow.onError((error) => {
             this._handleError(error);
         });
@@ -183,6 +208,22 @@ export class AuthenticationService {
             const deferred = this._logoutDeferred;
             this._logoutDeferred = null;
             deferred.resolve();
+        }
+    }
+
+    private _skipToNextAuthorization(url: string) {
+        this._closeWindow();
+        this._waitingForAuth = false;
+
+        const auth = this._currentAuthorization;
+        this._currentAuthorization = null;
+        if (this._authorizeQueue.length > 0) {
+            this._authorizeNext();
+        } else {
+            const authResult = this._getRedirectUrlParams(url) as AuthorizeResult;
+            authResult.skipped = true;
+            this._state.next(AuthenticationState.Authenticated);
+            auth!.deferred.resolve(authResult);
         }
     }
 

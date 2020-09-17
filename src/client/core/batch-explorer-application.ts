@@ -4,6 +4,7 @@ import { AutoUpdateService } from "@batch-flask/electron";
 import { log } from "@batch-flask/utils";
 import { AzureEnvironment } from "client/azure-environment";
 import { parseArguments } from "client/cli";
+import { TenantSelectionWindow } from "client/core/aad/authentication/tenant-selection-window";
 import { BlIpcMain } from "client/core/bl-ipc-main";
 import { BatchExplorerProperties } from "client/core/properties";
 import { TelemetryManager } from "client/core/telemetry/telemetry-manager";
@@ -222,6 +223,14 @@ export class BatchExplorerApplication {
 
     public checkForUpdates(): Promise<UpdateCheckResult> {
         return this.autoUpdater.checkForUpdates();
+    }
+
+    public askUserForAADTenantIds(): Promise<string[] | null> {
+        log.warn("Asking for AAD tenant IDs");
+        if (this._currentlyAskingForCredentials) { return this._currentlyAskingForCredentials; }
+        const tenantSelection = new TenantSelectionWindow(this);
+        tenantSelection.create();
+        return tenantSelection.chosenTenantIds;
     }
 
     public askUserForProxyCredentials(): Promise<ProxyCredentials> {

@@ -56,6 +56,11 @@ export const localStorageKey = {
     accountSubscriptionFilter: "account_subscription_filter",
 
     /**
+     * List of tenant IDs the user has chosen to auth against
+     */
+    chosenTenantIds: "chosen-tenant-ids",
+
+    /**
      * Subscriptions cached
      */
     subscriptions: "subscriptions",
