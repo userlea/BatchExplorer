@@ -60,8 +60,8 @@ async function gotoMaster() {
     success("Checkout to master branch and pulled latest");
 }
 
-async function loadMillestone(millestoneId: number) {
-    return getMilestone(repoName, millestoneId);
+async function loadMilestone(milestoneId: number) {
+    return getMilestone(repoName, milestoneId);
 }
 
 async function getCurrentBranch(): Promise<string> {
@@ -69,24 +69,29 @@ async function getCurrentBranch(): Promise<string> {
     return stdout.trim();
 }
 
-function getMillestoneId() {
+function getMilestoneId() {
     if (process.argv.length < 3) {
-        throw new Error("No millestone id was provided.");
+        throw new Error("No milestone id was provided.");
     }
     return parseInt(process.argv[2], 10);
 }
 
 async function confirmVersion(version: string) {
     return new Promise((resolve, reject) => {
-        ask(`Up program to be version ${version} (From millestone title) [Y/n]`, true, (ok) => {
+        ask(`Up program to be version ${version} (From milestone title) [Y/n]`, true, (ok) => {
             if (ok) {
                 success(`A new release for version ${version} will be prepared`);
                 resolve(null);
             } else {
-                reject(new Error("Millestone version wasn't confirmed. Please change millestone title"));
+                reject(new Error("milestone version wasn't confirmed. Please change milestone title"));
             }
         });
     });
+}
+
+function calcNextVersion(version: string) {
+    const match = /^(\d+\.)(\d+)(\.\d+)$/.exec(version);
+    return `${match[1]}${parseInt(match[2], 10) + 1}${match[3]}`;
 }
 
 function getPreparationBranchName(version: string) {
@@ -99,12 +104,20 @@ async function switchToNewBranch(branchName: string) {
 }
 
 async function bumpVersion(version) {
-    await run(`npm version --no-git-tag-version --allow-same-version ${version}`);
-    success(`Updated version in package.json to ${version}`);
+    const currentBranch = getCurrentBranch();
+    const nextVersion = calcNextVersion(version);
+    const bumpBranch = `release/bump-${nextVersion}`;
+    await run(`git checkout master`);
+    await run(`git checkout -b ${bumpBranch}`);
+    await run(`npm version --no-git-tag-version --allow-same-version ${nextVersion}`);
+
+    await run(`git commit -am "Bump version to ${nextVersion}"`);
+    await run(`get checkout "${currentBranch}"`);
+    success(`Updated version in package.json to ${nextVersion} (branch: ${bumpBranch})`);
 }
 
-async function updateChangeLog(version, millestoneId) {
-    const { stdout } = await run(`gh-changelog-gen --repo ${repoName} ${millestoneId} --formatter markdown`);
+async function updateChangeLog(version, milestoneId) {
+    const { stdout } = await run(`gh-changelog-gen --repo ${repoName} ${milestoneId} --formatter markdown`);
     const changelogFile = path.join(root, "CHANGELOG.md");
     const changelogContent = fs.readFileSync(changelogFile);
 
@@ -129,14 +142,14 @@ async function push(branchName: string) {
     await run(`git push --set-upstream origin ${branchName}`);
 }
 
-async function createIssueIfNot(millestoneId, version) {
+async function createIssueIfNot(milestoneId, version) {
     const title = `Prepare for release of version ${version}`;
-    const issues = await listMilestoneIssues(repoName, millestoneId);
+    const issues = await listMilestoneIssues(repoName, milestoneId);
     let issue = issues.filter(x => x.title === title)[0];
     if (issue) {
         success(`Issue was already created earlier ${issue.html_url}`);
     } else {
-        issue = await createIssue(repoName, title, newIssueBody, millestoneId);
+        issue = await createIssue(repoName, title, newIssueBody, milestoneId);
         success(`Created a new issue ${issue.html_url}`);
     }
     return issue;
@@ -166,12 +179,12 @@ async function buildApp() {
 
 async function startPublish() {
     checkGithubToken();
-    const millestoneId = getMillestoneId();
-    const millestone = await loadMillestone(millestoneId);
-    if (!millestone.title && millestone["message"]) {
-        throw new Error(`Error fetching milestone: ${millestone["message"]}`);
+    const milestoneId = getMilestoneId();
+    const milestone = await loadMilestone(milestoneId);
+    if (!milestone.title && milestone["message"]) {
+        throw new Error(`Error fetching milestone: ${milestone["message"]}`);
     }
-    const version = millestone.title;
+    const version = milestone.title;
     await confirmVersion(version);
     const releaseBranch = getPreparationBranchName(version);
     const branch = await getCurrentBranch();
@@ -179,14 +192,14 @@ async function startPublish() {
         await gotoMaster();
         await switchToNewBranch(releaseBranch);
     }
-    await bumpVersion(version);
-    await updateChangeLog(version, millestoneId);
+    await updateChangeLog(version, milestoneId);
     await updateThirdParty();
     await commitChanges();
     await push(releaseBranch);
-    const issue = await createIssueIfNot(millestoneId, version);
+    const issue = await createIssueIfNot(milestoneId, version);
     await createPullrequestIfNot(version, releaseBranch, issue);
     await buildApp();
+    await bumpVersion(version);
 }
 
 startPublish().then(() => {
