@@ -130,7 +130,7 @@ export const ButtonDemo: React.FC = () => {
     }
 
     /*
-     * This function returns true if the user wants to include a hyperlink and false if not.
+     * This function returns false if the user wants to include a hyperlink and true if they do.
      */
     function CheckURL(param: string | undefined): boolean {
         if (param == "url") {
@@ -224,7 +224,9 @@ export const ButtonDemo: React.FC = () => {
         },
         []
     );
-
+/*
+     * This function fills in the URL textbox if the user wants to include a URL (and doesn't if they don't).
+     */
     function mynext(param: string): string {
         if (CheckURL(iconUrlKey) == false) {
             return param;
@@ -233,6 +235,9 @@ export const ButtonDemo: React.FC = () => {
         }
     }
 
+    /*
+     * This function returns the actual URL the user has typed if the user wants to include a URL and there is no error message on their URL
+     */
     function dup(param: string | undefined): string {
         if (param == "url" && errorMsg == "") {
             return firstTextFieldValue;
