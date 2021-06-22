@@ -33,10 +33,6 @@ export const ButtonDemo: React.FC = () => {
         "nondisabled"
     );
 
-    /* const [disabledFocusKey, setDisabledFocusKey] = React.useState<
-        string | undefined
-    >("focus"); */
-
     const [checkedKey, setCheckedKey] = React.useState<string | undefined>(
         "unchecked"
     );
@@ -53,10 +49,6 @@ export const ButtonDemo: React.FC = () => {
         { key: "disabled", text: "disabled" },
     ];
 
-    /* const allowDisabledFocusOptions: IChoiceGroupOption[] = [
-        { key: "focus", text: "Focus" },
-        { key: "nofocus", text: "No focus" },
-    ]; */
 
     const checkedOptions: IChoiceGroupOption[] = [
         { key: "unchecked", text: "Unchecked" },

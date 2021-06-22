@@ -18,7 +18,7 @@ import { Nodes } from "../displays/nodes";
 import { Packages } from "../displays/packages";
 import { PoolGraph } from "../displays/poolgraph";
 import { Tasks } from "../displays/tasks";
-import { TextField } from "../generic/textfield";
+import { TextFieldDemo } from "../generic/textfield";
 import { CheckboxDemo } from "../demo/generic/checkbox/checkbox-demo";
 
 export const DemoMainContent: React.FC = () => {
@@ -43,7 +43,7 @@ export const DemoMainContent: React.FC = () => {
                 <SearchBox />
             </Route>
             <Route path="/textfield">
-                <TextField />
+                <TextFieldDemo />
             </Route>
             <Route path="/galleryapplication">
                 <GalleryApplication />
