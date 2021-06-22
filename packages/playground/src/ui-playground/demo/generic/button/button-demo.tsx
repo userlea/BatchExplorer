@@ -5,7 +5,12 @@ import {
     ChoiceGroup,
     IChoiceGroupOption,
 } from "@fluentui/react/lib/ChoiceGroup";
-import { IStackProps, IStackStyles, Stack } from "@fluentui/react/lib/Stack";
+import {
+    IStackProps,
+    IStackStyles,
+    Stack,
+    IStackTokens,
+} from "@fluentui/react/lib/Stack";
 import { TextField } from "@fluentui/react/lib/TextField";
 import React from "react";
 import {
@@ -13,6 +18,7 @@ import {
     ICONS,
     Item,
     TextFieldOnChange,
+    HeightAndWidth,
 } from "../../../functions";
 import { headingStyle } from "../../../style";
 import { DemoPane } from "../../../layout/demo-pane";
@@ -478,7 +484,7 @@ export const ButtonDemo: React.FC = () => {
     /*
      * Determines width and height of the user's window (and updates dynamically every time they resize it)
      */
-    const [width, setWidth] = React.useState(window.innerWidth);
+    /* const [width, setWidth] = React.useState(window.innerWidth);
     const [height, setHeight] = React.useState(window.innerHeight);
 
     const updateDimensions = () => {
@@ -489,13 +495,13 @@ export const ButtonDemo: React.FC = () => {
     React.useEffect(() => {
         window.addEventListener("resize", updateDimensions);
         return () => window.removeEventListener("resize", updateDimensions);
-    }, []);
+    }, []); */
 
     //Styles for the setting columns
-    const stackTokens = { childrenGap: width / 30 }; //gap between the columns - 30
+    const stackTokens = { childrenGap: HeightAndWidth()[1] / 30 }; //gap between the columns - 30
 
     //Styles specifically for normal button columns
-    const stackStyles: Partial<IStackStyles> = {
+    /*  const stackStyles: Partial<IStackStyles> = {
         root: {
             width: width / 1.2,
             height: height / 2.8,
@@ -504,12 +510,15 @@ export const ButtonDemo: React.FC = () => {
             overflow: "scroll",
         }, //width of the actual columns
     };
-
+*/
     const columnProps: Partial<IStackProps> = {
         tokens: { childrenGap: 55 },
         styles: {
             root: {
-                width: width,
+                width: window.screen.availWidth / 5.5, //window.screen.availWidth / 5.5
+                display: "flex",
+                justifyContent: "center",
+                align: "center",
                 //overflowX: "scroll",
                 // overflowY: "scroll",
             },
@@ -517,18 +526,41 @@ export const ButtonDemo: React.FC = () => {
     };
 
     //Styles specifically for icon button columns
-    const iconStackStyles: Partial<IStackStyles> = {
+    /*  const iconStackStyles: Partial<IStackStyles> = {
         root: {
-            width: width / 1.2, //width / 1.2
-            height: height / 2.1,
+            width: HeightAndWidth()[1] / 1.2, //width / 1.2
+            height: HeightAndWidth()[0] / 2.1,
             display: "flex",
             justifyContent: "center",
             overflow: "scroll",
         }, //width of the actual columns
+    }; */
+
+    // Non-mutating styles definition
+    /* const itemStyles: React.CSSProperties = {
+        alignItems: "center",
+        display: "flex",
+        height: 50,
+        justifyContent: "center",
+        width: 50,
+    }; */
+
+    // Tokens definition
+    const sectionStackTokens: IStackTokens = { childrenGap: 10 };
+    const wrapStackTokens: IStackTokens = { childrenGap: 30 };
+
+    // Mutating styles definition
+    const stackStyles: IStackStyles = {
+        root: {
+            width: HeightAndWidth()[1] - HeightAndWidth()[1] / 6,
+            display: "flex",
+            justifyContent: "center",
+            //align: "center",
+        },
     };
 
     return (
-        <DemoPane title="Normal Button">
+        <DemoPane title="Default Button">
             {/* Normal Button component */}
             <div style={{ display: "flex", justifyContent: alignKey }}>
                 <DefaultButton
@@ -548,153 +580,173 @@ export const ButtonDemo: React.FC = () => {
                 />
             </div>
             <br></br>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-                <Stack horizontal tokens={stackTokens} styles={stackStyles}>
-                    <Stack {...columnProps}>
-                        {/* Textfield for assigning text label to button */}
-                        <TextField
-                            label="Text"
-                            defaultValue={labelValue}
-                            onChange={TextFieldOnChange(setLabelValue)}
-                        />
-                        <ChoiceGroup
-                            selectedKey={alignKey}
-                            options={alignOptions}
-                            onChange={ChoiceGroupOnChange(setAlignKey)}
-                            label="Align status"
-                        />
-                        {/* ChoiceGroup for assigning style (primary/default) to button */}
-                        <ChoiceGroup
-                            selectedKey={selectedKey}
-                            options={styleOptions}
-                            onChange={ChoiceGroupOnChange(setSelectedKey)}
-                            label="Choose a style"
-                        />
-                        <ChoiceGroup
-                            selectedKey={disabledKey}
-                            options={disabledOptions}
-                            onChange={ChoiceGroupOnChange(setDisabledKey)}
-                            label="Disabled status"
-                        />
-                    </Stack>
-                    <Stack {...columnProps}>
-                        {/* <ChoiceGroup
+            <Stack tokens={sectionStackTokens}>
+                <Stack
+                    horizontal
+                    wrap
+                    styles={stackStyles}
+                    tokens={wrapStackTokens}
+                >
+                    <span>
+                        <Stack {...columnProps}>
+                            {/* Textfield for assigning text label to button */}
+                            <TextField
+                                label="Text"
+                                defaultValue={labelValue}
+                                onChange={TextFieldOnChange(setLabelValue)}
+                            />
+                            <ChoiceGroup
+                                selectedKey={alignKey}
+                                options={alignOptions}
+                                onChange={ChoiceGroupOnChange(setAlignKey)}
+                                label="Align status"
+                            />
+                            {/* ChoiceGroup for assigning style (primary/default) to button */}
+                            <ChoiceGroup
+                                selectedKey={selectedKey}
+                                options={styleOptions}
+                                onChange={ChoiceGroupOnChange(setSelectedKey)}
+                                label="Choose a style"
+                            />
+                            <ChoiceGroup
+                                selectedKey={disabledKey}
+                                options={disabledOptions}
+                                onChange={ChoiceGroupOnChange(setDisabledKey)}
+                                label="Disabled status"
+                            />
+                        </Stack>
+                    </span>
+                    <span>
+                        <Stack {...columnProps}>
+                            {/* <ChoiceGroup
                             selectedKey={disabledFocusKey}
                             options={allowDisabledFocusOptions}
                             onChange={ChoiceGroupOnChange(setDisabledFocusKey)}
                             label="Focus in disabled mode"
                         /> */}
-                        <Slider
-                            label="Font Size"
-                            min={0}
-                            max={100}
-                            defaultValue={50}
-                            value={fontValue}
-                            onChange={fontOnChange}
-                        />
-                        <ChoiceGroup
-                            selectedKey={checkedKey}
-                            options={checkedOptions}
-                            onChange={ChoiceGroupOnChange(setCheckedKey)}
-                            label="Checked status"
-                        />
-                        <ChoiceGroup
-                            selectedKey={urlKey}
-                            options={urlOptions}
-                            onChange={ChoiceGroupOnChange(setUrlKey)}
-                            label="Would you like to include a hyperlink?"
-                        />
-                        <TextField
-                            label="URL"
-                            value={standard(secondTextFieldValue)}
-                            onChange={onChangeSecondTextFieldValue}
-                            errorMessage={standard(errorMsg)}
-                            disabled={CheckURL(urlKey)}
-                        />
-                    </Stack>
-                    <Stack {...columnProps}>
-                        <Slider
-                            label="Padding Slider"
-                            min={15}
-                            max={100}
-                            value={paddingSliderValue}
-                            onChange={paddingSliderOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Left"
-                            min={15}
-                            max={100}
-                            value={paddingSliderLeftValue}
-                            onChange={paddingSliderLeftOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Right"
-                            min={15}
-                            max={100}
-                            value={paddingSliderRightValue}
-                            onChange={paddingSliderRightOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Top"
-                            min={15}
-                            max={100}
-                            value={paddingSliderTopValue}
-                            onChange={paddingSliderTopOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Bottom"
-                            min={15}
-                            max={100}
-                            value={paddingSliderBottomValue}
-                            onChange={paddingSliderBottomOnChange}
-                        />
-                    </Stack>
-                    <Stack {...columnProps}>
-                        <Slider
-                            label="Margin Slider"
-                            min={0}
-                            max={100}
-                            value={marginSliderValue}
-                            onChange={marginSliderOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Left"
-                            min={0}
-                            max={100}
-                            value={marginSliderLeftValue}
-                            onChange={marginSliderLeftOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Right"
-                            min={0}
-                            max={100}
-                            value={marginSliderRightValue}
-                            onChange={marginSliderRightOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Top"
-                            min={0}
-                            max={100}
-                            value={marginSliderTopValue}
-                            onChange={marginSliderTopOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Bottom"
-                            min={0}
-                            max={100}
-                            value={marginSliderBottomValue}
-                            onChange={marginSliderBottomOnChange}
-                        />
-                    </Stack>
+                            <Slider
+                                label="Font Size"
+                                min={0}
+                                max={100}
+                                defaultValue={50}
+                                value={fontValue}
+                                onChange={fontOnChange}
+                            />
+                            <ChoiceGroup
+                                selectedKey={checkedKey}
+                                options={checkedOptions}
+                                onChange={ChoiceGroupOnChange(setCheckedKey)}
+                                label="Checked status"
+                            />
+                            <ChoiceGroup
+                                selectedKey={urlKey}
+                                options={urlOptions}
+                                onChange={ChoiceGroupOnChange(setUrlKey)}
+                                label="Would you like to include a hyperlink?"
+                            />
+                            <TextField
+                                label="URL"
+                                value={standard(secondTextFieldValue)}
+                                onChange={onChangeSecondTextFieldValue}
+                                errorMessage={standard(errorMsg)}
+                                disabled={CheckURL(urlKey)}
+                            />
+                        </Stack>
+                    </span>
+                    <span>
+                        <Stack {...columnProps}>
+                            <Slider
+                                label="Padding Slider"
+                                min={15}
+                                max={100}
+                                value={paddingSliderValue}
+                                onChange={paddingSliderOnChange}
+                            />
+                            <Slider
+                                label="Padding Slider Left"
+                                min={15}
+                                max={100}
+                                value={paddingSliderLeftValue}
+                                onChange={paddingSliderLeftOnChange}
+                            />
+                            <Slider
+                                label="Padding Slider Right"
+                                min={15}
+                                max={100}
+                                value={paddingSliderRightValue}
+                                onChange={paddingSliderRightOnChange}
+                            />
+                            <Slider
+                                label="Padding Slider Top"
+                                min={15}
+                                max={100}
+                                value={paddingSliderTopValue}
+                                onChange={paddingSliderTopOnChange}
+                            />
+                            <Slider
+                                label="Padding Slider Bottom"
+                                min={15}
+                                max={100}
+                                value={paddingSliderBottomValue}
+                                onChange={paddingSliderBottomOnChange}
+                            />
+                        </Stack>
+                    </span>
+                    <span>
+                        <Stack {...columnProps}>
+                            <Slider
+                                label="Margin Slider"
+                                min={0}
+                                max={100}
+                                value={marginSliderValue}
+                                onChange={marginSliderOnChange}
+                            />
+                            <Slider
+                                label="Margin Slider Left"
+                                min={0}
+                                max={100}
+                                value={marginSliderLeftValue}
+                                onChange={marginSliderLeftOnChange}
+                            />
+                            <Slider
+                                label="Margin Slider Right"
+                                min={0}
+                                max={100}
+                                value={marginSliderRightValue}
+                                onChange={marginSliderRightOnChange}
+                            />
+                            <Slider
+                                label="Margin Slider Top"
+                                min={0}
+                                max={100}
+                                value={marginSliderTopValue}
+                                onChange={marginSliderTopOnChange}
+                            />
+                            <Slider
+                                label="Margin Slider Bottom"
+                                min={0}
+                                max={100}
+                                value={marginSliderBottomValue}
+                                onChange={marginSliderBottomOnChange}
+                            />
+                        </Stack>
+                    </span>
                 </Stack>
+            </Stack>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+                <Stack
+                    horizontal
+                    tokens={stackTokens}
+                    styles={stackStyles}
+                ></Stack>
             </div>
-            <h2 style={headingStyle}> JSON Editor for Normal Button</h2>
+            <h2 style={headingStyle}> JSON Editor for Default Button</h2>
             <div
                 style={{
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    height: height / 3, //500
+                    height: HeightAndWidth()[0] / 3, //500
                 }}
             >
                 <MonacoEditor
@@ -748,49 +800,64 @@ export const ButtonDemo: React.FC = () => {
                 />
             </div>
             <div style={{ display: "flex", justifyContent: "center" }}>
-                <Stack horizontal tokens={stackTokens} styles={iconStackStyles}>
-                    <Stack {...columnProps}>
-                        <TextField
-                            label="Enter an icon name [example: Delete]"
-                            defaultValue="hello"
-                            value={query}
-                            onChange={mainfinal}
-                            //errorMessage={"Error: not a valid icon"}
-                        />
+                <Stack tokens={sectionStackTokens}>
+                    <Stack
+                        horizontal
+                        wrap
+                        styles={stackStyles}
+                        tokens={wrapStackTokens}
+                    >
+                        <span>
+                            <Stack {...columnProps}>
+                                <TextField
+                                    label="Enter an icon name [example: Delete]"
+                                    defaultValue="hello"
+                                    value={query}
+                                    onChange={mainfinal}
+                                    //errorMessage={"Error: not a valid icon"}
+                                />
 
-                        {/* Display search result */}
+                                {/* Display search result */}
 
-                        <div className="search-result">
-                            {result && result.length > 0 ? (
-                                result.map((item) => (
-                                    <li key={item.id} className="item">
-                                        {/*   <span style={headingStyle}>{item.id}</span> */}
+                                <div className="search-result">
+                                    {result && result.length > 0 ? (
+                                        result.map((item) => (
+                                            <li key={item.id} className="item">
+                                                {/*   <span style={headingStyle}>{item.id}</span> */}
 
-                                        <DefaultButton
-                                            onClick={() => Foo(item.name)}
-                                            text={item.name}
-                                        />
-                                    </li>
-                                ))
-                            ) : (
-                                <h2>No items found!</h2>
-                            )}
-                        </div>
-                    </Stack>
-                    <Stack {...columnProps}>
-                        <ChoiceGroup
-                            selectedKey={iconAlignKey}
-                            options={alignOptions}
-                            onChange={ChoiceGroupOnChange(setIconAlignKey)}
-                            label="Align status for icon"
-                        />
-                        <ChoiceGroup
-                            selectedKey={disabledIconKey}
-                            options={disabledOptions}
-                            onChange={ChoiceGroupOnChange(setDisabledIconKey)}
-                            label="Disabled status for icon"
-                        />
-                        {/* <ChoiceGroup
+                                                <DefaultButton
+                                                    onClick={() =>
+                                                        Foo(item.name)
+                                                    }
+                                                    text={item.name}
+                                                />
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <h2>No items found!</h2>
+                                    )}
+                                </div>
+                            </Stack>
+                        </span>
+                        <span>
+                            <Stack {...columnProps}>
+                                <ChoiceGroup
+                                    selectedKey={iconAlignKey}
+                                    options={alignOptions}
+                                    onChange={ChoiceGroupOnChange(
+                                        setIconAlignKey
+                                    )}
+                                    label="Align status for icon"
+                                />
+                                <ChoiceGroup
+                                    selectedKey={disabledIconKey}
+                                    options={disabledOptions}
+                                    onChange={ChoiceGroupOnChange(
+                                        setDisabledIconKey
+                                    )}
+                                    label="Disabled status for icon"
+                                />
+                                {/* <ChoiceGroup
                             selectedKey={disabledFocusIconKey}
                             options={allowDisabledFocusOptions}
                             onChange={ChoiceGroupOnChange(
@@ -798,99 +865,109 @@ export const ButtonDemo: React.FC = () => {
                             )}
                             label="Focus in disabled mode"
                             /> */}
-                        <ChoiceGroup
-                            selectedKey={checkedIconKey}
-                            options={checkedOptions}
-                            onChange={ChoiceGroupOnChange(setCheckedIconKey)}
-                            label="Checked status for icon"
-                        />
-                        <ChoiceGroup
-                            selectedKey={iconUrlKey}
-                            options={urlOptions}
-                            onChange={ChoiceGroupOnChange(setIconUrlKey)}
-                            label="Would you like to include a hyperlink for the icon?"
-                        />
-                        <TextField
-                            label="URL"
-                            value={mynext(firstTextFieldValue)}
-                            onChange={onChangeIconUrlLink}
-                            errorMessage={mynext(iconErrorMsg)}
-                            disabled={CheckURL(iconUrlKey)}
-                        />
-                    </Stack>
-                    <Stack {...columnProps}>
-                        <Slider
-                            label="Padding Slider"
-                            min={15}
-                            max={100}
-                            value={iconPaddingSliderValue}
-                            onChange={iconPaddingSliderOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Left"
-                            min={15}
-                            max={100}
-                            value={iconPaddingSliderLeftValue}
-                            onChange={iconPaddingSliderLeftOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Right"
-                            min={15}
-                            max={100}
-                            value={iconPaddingSliderRightValue}
-                            onChange={iconPaddingSliderRightOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Top"
-                            min={15}
-                            max={100}
-                            value={iconPaddingSliderTopValue}
-                            onChange={iconPaddingSliderTopOnChange}
-                        />
-                        <Slider
-                            label="Padding Slider Bottom"
-                            min={15}
-                            max={100}
-                            value={iconPaddingSliderBottomValue}
-                            onChange={iconPaddingSliderBottomOnChange}
-                        />
-                    </Stack>
-                    <Stack {...columnProps}>
-                        <Slider
-                            label="Margin Slider"
-                            min={0}
-                            max={100}
-                            value={iconMarginSliderValue}
-                            onChange={iconMarginSliderOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Left"
-                            min={0}
-                            max={100}
-                            value={iconMarginSliderLeftValue}
-                            onChange={iconMarginSliderLeftOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Right"
-                            min={0}
-                            max={100}
-                            value={iconMarginSliderRightValue}
-                            onChange={iconMarginSliderRightOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Top"
-                            min={0}
-                            max={100}
-                            value={iconMarginSliderTopValue}
-                            onChange={iconMarginSliderTopOnChange}
-                        />
-                        <Slider
-                            label="Margin Slider Bottom"
-                            min={0}
-                            max={100}
-                            value={iconMarginSliderBottomValue}
-                            onChange={iconMarginSliderBottomOnChange}
-                        />
+                                <ChoiceGroup
+                                    selectedKey={checkedIconKey}
+                                    options={checkedOptions}
+                                    onChange={ChoiceGroupOnChange(
+                                        setCheckedIconKey
+                                    )}
+                                    label="Checked status for icon"
+                                />
+                                <ChoiceGroup
+                                    selectedKey={iconUrlKey}
+                                    options={urlOptions}
+                                    onChange={ChoiceGroupOnChange(
+                                        setIconUrlKey
+                                    )}
+                                    label="Would you like to include a hyperlink for the icon?"
+                                />
+                                <TextField
+                                    label="URL"
+                                    value={mynext(firstTextFieldValue)}
+                                    onChange={onChangeIconUrlLink}
+                                    errorMessage={mynext(iconErrorMsg)}
+                                    disabled={CheckURL(iconUrlKey)}
+                                />
+                            </Stack>
+                        </span>
+                        <span>
+                            <Stack {...columnProps}>
+                                <Slider
+                                    label="Padding Slider"
+                                    min={15}
+                                    max={100}
+                                    value={iconPaddingSliderValue}
+                                    onChange={iconPaddingSliderOnChange}
+                                />
+                                <Slider
+                                    label="Padding Slider Left"
+                                    min={15}
+                                    max={100}
+                                    value={iconPaddingSliderLeftValue}
+                                    onChange={iconPaddingSliderLeftOnChange}
+                                />
+                                <Slider
+                                    label="Padding Slider Right"
+                                    min={15}
+                                    max={100}
+                                    value={iconPaddingSliderRightValue}
+                                    onChange={iconPaddingSliderRightOnChange}
+                                />
+                                <Slider
+                                    label="Padding Slider Top"
+                                    min={15}
+                                    max={100}
+                                    value={iconPaddingSliderTopValue}
+                                    onChange={iconPaddingSliderTopOnChange}
+                                />
+                                <Slider
+                                    label="Padding Slider Bottom"
+                                    min={15}
+                                    max={100}
+                                    value={iconPaddingSliderBottomValue}
+                                    onChange={iconPaddingSliderBottomOnChange}
+                                />
+                            </Stack>
+                        </span>
+                        <span>
+                            <Stack {...columnProps}>
+                                <Slider
+                                    label="Margin Slider"
+                                    min={0}
+                                    max={100}
+                                    value={iconMarginSliderValue}
+                                    onChange={iconMarginSliderOnChange}
+                                />
+                                <Slider
+                                    label="Margin Slider Left"
+                                    min={0}
+                                    max={100}
+                                    value={iconMarginSliderLeftValue}
+                                    onChange={iconMarginSliderLeftOnChange}
+                                />
+                                <Slider
+                                    label="Margin Slider Right"
+                                    min={0}
+                                    max={100}
+                                    value={iconMarginSliderRightValue}
+                                    onChange={iconMarginSliderRightOnChange}
+                                />
+                                <Slider
+                                    label="Margin Slider Top"
+                                    min={0}
+                                    max={100}
+                                    value={iconMarginSliderTopValue}
+                                    onChange={iconMarginSliderTopOnChange}
+                                />
+                                <Slider
+                                    label="Margin Slider Bottom"
+                                    min={0}
+                                    max={100}
+                                    value={iconMarginSliderBottomValue}
+                                    onChange={iconMarginSliderBottomOnChange}
+                                />
+                            </Stack>
+                        </span>
                     </Stack>
                 </Stack>
             </div>
@@ -900,7 +977,7 @@ export const ButtonDemo: React.FC = () => {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    height: height / 3, //500
+                    height: HeightAndWidth()[0] / 3, //500
                 }}
             >
                 <MonacoEditor

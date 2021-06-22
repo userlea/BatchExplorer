@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Route, Switch } from "react-router";
 import { ButtonDemo } from "../demo/generic/button/button-demo";
-import { ComboBox } from "../generic/combobox";
+import { ComboBoxDemo } from "../demo/generic/combobox/combobox-demo";
 import { Dropdown } from "../generic/dropdown";
 import { Graph } from "../generic/graph";
 import { SearchBox } from "../generic/searchbox";
@@ -19,7 +19,7 @@ import { Packages } from "../displays/packages";
 import { PoolGraph } from "../displays/poolgraph";
 import { Tasks } from "../displays/tasks";
 import { TextField } from "../generic/textfield";
-import { Checkbox } from "../generic/checkbox";
+import { CheckboxDemo } from "../demo/generic/checkbox/checkbox-demo";
 
 export const DemoMainContent: React.FC = () => {
     return (
@@ -28,10 +28,10 @@ export const DemoMainContent: React.FC = () => {
                 <ButtonDemo />
             </Route>
             <Route path="/checkbox">
-                <Checkbox />
+                <CheckboxDemo />
             </Route>
             <Route path="/combobox">
-                <ComboBox />
+                <ComboBoxDemo />
             </Route>
             <Route path="/dropdown">
                 <Dropdown />

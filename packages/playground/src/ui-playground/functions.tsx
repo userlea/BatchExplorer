@@ -170,3 +170,20 @@ export const ICONS: Item[] = [
         name: "ToggleRight",
     },
 ];
+
+export function HeightAndWidth(): number[] {
+    const [height, setHeight] = React.useState(window.innerHeight);
+    const [width, setWidth] = React.useState(window.innerWidth);
+
+    const updateDimensions = () => {
+        setHeight(window.innerHeight);
+        setWidth(window.innerWidth);
+    };
+
+    React.useEffect(() => {
+        window.addEventListener("resize", updateDimensions);
+        return () => window.removeEventListener("resize", updateDimensions);
+    }, []);
+
+    return [height, width];
+}

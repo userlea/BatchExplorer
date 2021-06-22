@@ -1,6 +1,6 @@
 import * as React from "react";
-import { headingStyle } from "../style";
+import { DemoPane } from "../layout/demo-pane";
 
 export const SearchBox: React.FC = (props) => {
-    return <h1 style={headingStyle}>SearchBox</h1>;
+    return <DemoPane title="SearchBox"></DemoPane>;
 };
