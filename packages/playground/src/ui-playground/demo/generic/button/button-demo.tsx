@@ -49,7 +49,6 @@ export const ButtonDemo: React.FC = () => {
         { key: "disabled", text: "disabled" },
     ];
 
-
     const checkedOptions: IChoiceGroupOption[] = [
         { key: "unchecked", text: "Unchecked" },
         { key: "checked", text: "Checked" },
@@ -216,7 +215,7 @@ export const ButtonDemo: React.FC = () => {
         },
         []
     );
-/*
+    /*
      * This function fills in the URL textbox if the user wants to include a URL (and doesn't if they don't).
      */
     function mynext(param: string): string {
@@ -556,6 +555,8 @@ export const ButtonDemo: React.FC = () => {
         },
     };
 
+    const msg2 = `No results.\nPlease try another search term.`;
+
     return (
         <DemoPane title="Default Button">
             {/* Normal Button component */}
@@ -744,9 +745,11 @@ export const ButtonDemo: React.FC = () => {
                     justifyContent: "center",
                     alignItems: "center",
                     height: HeightAndWidth()[0] / 3, //500
+                    whiteSpace: "pre",
                 }}
             >
                 <MonacoEditor
+                    value={msg2}
                     language="json"
                     containerStyle={{
                         // display: "flex",

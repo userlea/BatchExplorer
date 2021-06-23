@@ -2,23 +2,23 @@ import * as React from "react";
 import { Route, Switch } from "react-router";
 import { ButtonDemo } from "../demo/generic/button/button-demo";
 import { ComboBoxDemo } from "../demo/generic/combobox/combobox-demo";
-import { Dropdown } from "../generic/dropdown";
-import { Graph } from "../generic/graph";
-import { SearchBox } from "../generic/searchbox";
-import { GalleryApplication } from "../batch/galleryapplication";
-import { Quota } from "../batch/quota";
-import { Resources } from "../batch/resources";
-import { Tab } from "../batch/tab";
-import { Toolbar } from "../batch/toolbar";
-import { Configuration } from "../displays/configuration";
-import { CreateItem } from "../displays/createitem";
-import { File } from "../displays/file";
-import { JobSpecification } from "../displays/jobspecification";
-import { Nodes } from "../displays/nodes";
-import { Packages } from "../displays/packages";
-import { PoolGraph } from "../displays/poolgraph";
-import { Tasks } from "../displays/tasks";
-import { TextFieldDemo } from "../generic/textfield";
+import { DropdownDemo } from "../demo/generic/dropdown/dropdown-demo";
+import { GraphDemo } from "../demo/generic/graph/graph-demo";
+import { SearchBoxDemo } from "../demo/generic/searchbox/searchbox-demo";
+import { GalleryApplicationDemo } from "../demo/batch/galleryapplication/galleryapplication-demo";
+import { QuotaDemo } from "../demo/batch/quota/quota-demo";
+import { ResourcesDemo } from "../demo/batch/resources/resources-demo";
+import { TabDemo } from "../demo/batch/tab/tab-demo";
+import { ToolbarDemo } from "../demo/batch/toolbar/toolbar-demo";
+import { ConfigurationDemo } from "../demo/displays/configuration/configuration-demo";
+import { CreateItemDemo } from "../demo/displays/createitem/createitem-demo";
+import { FileDemo } from "../demo/displays/file/file-demo";
+import { JobSpecificationDemo } from "../demo/displays/jobspecification/jobspecification-demo";
+import { NodesDemo } from "../demo/displays/nodes/nodes-demo";
+import { PackagesDemo } from "../demo/displays/packages/packages-demo";
+import { PoolGraphDemo } from "../demo/displays/poolgraph/poolgraph-demo";
+import { TasksDemo } from "../demo/displays/tasks/tasks-demo";
+import { TextFieldDemo } from "../demo/generic/textfield/textfield-demo";
 import { CheckboxDemo } from "../demo/generic/checkbox/checkbox-demo";
 
 export const DemoMainContent: React.FC = () => {
@@ -34,55 +34,55 @@ export const DemoMainContent: React.FC = () => {
                 <ComboBoxDemo />
             </Route>
             <Route path="/dropdown">
-                <Dropdown />
+                <DropdownDemo />
             </Route>
             <Route path="/graph">
-                <Graph />
+                <GraphDemo />
             </Route>
             <Route path="/searchbox">
-                <SearchBox />
+                <SearchBoxDemo />
             </Route>
             <Route path="/textfield">
                 <TextFieldDemo />
             </Route>
             <Route path="/galleryapplication">
-                <GalleryApplication />
+                <GalleryApplicationDemo />
             </Route>
             <Route path="/quota">
-                <Quota />
+                <QuotaDemo />
             </Route>
             <Route path="/resources">
-                <Resources />
+                <ResourcesDemo />
             </Route>
             <Route path="/tab">
-                <Tab />
+                <TabDemo />
             </Route>
             <Route path="/toolbar">
-                <Toolbar />
+                <ToolbarDemo />
             </Route>
             <Route path="/configuration">
-                <Configuration />
+                <ConfigurationDemo />
             </Route>
             <Route path="/createitem">
-                <CreateItem />
+                <CreateItemDemo />
             </Route>
             <Route path="/file">
-                <File />
+                <FileDemo />
             </Route>
             <Route path="/poolgraph">
-                <PoolGraph />
+                <PoolGraphDemo />
             </Route>
             <Route path="/jobspecification">
-                <JobSpecification />
+                <JobSpecificationDemo />
             </Route>
             <Route path="/nodes">
-                <Nodes />
+                <NodesDemo />
             </Route>
             <Route path="/packages">
-                <Packages />
+                <PackagesDemo />
             </Route>
             <Route path="/tasks">
-                <Tasks />
+                <TasksDemo />
             </Route>
         </Switch>
     );
