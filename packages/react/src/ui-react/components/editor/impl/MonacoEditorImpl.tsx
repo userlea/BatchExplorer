@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import {debounce, DebouncedFunction} from "@batch/ui-common"
+import { debounce, DebouncedFunction } from "@batch/ui-common";
 
 const defaultOnChangeDelay = 200;
 
@@ -44,7 +44,7 @@ export interface MonacoEditorImplProps {
      * Maximum number of milliseconds to wait before firing an onChange event.
      * If not specified, changes will be delayed until user input slows enough.
      */
-     onChangeMaxWait?: number;
+    onChangeMaxWait?: number;
 
     /**
      * Callback for when the text contents of the editor changes. Change events
@@ -85,6 +85,10 @@ export class EditorController {
 
     setLanguage(language: string): void {
         monaco.editor.setModelLanguage(this.model, language);
+    }
+
+    setValue(value: string | null): void {
+        this.model.setValue(value ?? "");
     }
 }
 
@@ -134,7 +138,15 @@ export const MonacoEditor: React.FC<MonacoEditorImplProps> = (props) => {
                 _destroyEditor(editor);
             }
         };
-    }, [props, containerRef, controllerRef, value]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [containerRef, controllerRef]);
+
+    React.useEffect(() => {
+        const controller = controllerRef.current;
+        if (controller) {
+            controller.setValue(value);
+        }
+    }, [value]);
 
     return (
         <div
@@ -158,13 +170,17 @@ function _createEditor(
 
     let debouncedOnChange: DebouncedFunction<() => void> | undefined;
     if (props.onChange) {
-        debouncedOnChange = debounce(() => {
-            if (props.onChange) {
-                props.onChange(model.getValue());
+        debouncedOnChange = debounce(
+            () => {
+                if (props.onChange) {
+                    props.onChange(model.getValue());
+                }
+            },
+            props.onChangeDelay ?? defaultOnChangeDelay,
+            {
+                maxWait: props.onChangeMaxWait,
             }
-        }, props.onChangeDelay ?? defaultOnChangeDelay, {
-            maxWait: props.onChangeMaxWait
-        });
+        );
     }
 
     if (props.onCreate) {
